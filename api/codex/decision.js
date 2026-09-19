@@ -102,9 +102,10 @@ function isAllowedCandidate(candidate, stage) {
 }
 
 function outputText(body) {
+  if (typeof body.output_text === "string" && body.output_text.trim()) return body.output_text;
   for (const item of body.output ?? []) {
     for (const content of item.content ?? []) {
-      if (content.type === "output_text" && typeof content.text === "string") return content.text;
+      if (typeof content.text === "string" && content.text.trim()) return content.text;
     }
   }
   return null;
@@ -124,7 +125,8 @@ async function requestCandidate(input) {
         model: process.env.OPENAI_MODEL ?? "gpt-5-mini",
         input: planningPrompt(input),
         store: false,
-        max_output_tokens: 360,
+        max_output_tokens: 800,
+        reasoning: { effort: "minimal" },
         text: {
           format: {
             type: "json_schema",
