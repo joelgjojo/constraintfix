@@ -2,7 +2,6 @@ import { Activity, Eye, ScanLine, ShieldCheck } from "lucide-react";
 import type { AgentPhase } from "@/agent/types";
 import { BorderGlow } from "@/components/ui/border-glow";
 import { CursorGrid } from "@/components/ui/cursor-grid";
-import { Ferrofluid } from "@/components/ui/ferrofluid";
 import { LatticeLoader } from "@/components/ui/lattice-loader";
 import { ScrambledText } from "@/components/ui/scrambled-text";
 import { Strands } from "@/components/ui/strands";
@@ -27,7 +26,6 @@ export function AgentSignal({ phase, provider }: AgentSignalProps) {
     <BorderGlow className="agent-signal" glowColor="96, 165, 250" animated>
       <aside className="agent-signal__surface" aria-label="Live agent signal">
         <CursorGrid className="pointer-events-none absolute inset-0 opacity-90" color="#60A5FA" cellSize={24} radius={140} />
-        <Ferrofluid active={working} className="pointer-events-none absolute -right-4 -top-10 h-56 w-56 opacity-95" />
         <Strands active className="pointer-events-none absolute inset-x-0 bottom-0 h-36 opacity-90" />
 
         <div className="agent-signal__content">

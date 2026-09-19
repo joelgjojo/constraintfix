@@ -25,6 +25,29 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.app-shell {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+.app-ferrofluid {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  background: radial-gradient(circle at 52% 16%, rgba(0, 60, 255, 0.11), transparent 36%), #07090d;
+}
+
+.app-ferrofluid[data-renderer="fallback"] {
+  background:
+    radial-gradient(circle at 70% 30%, rgba(0, 60, 255, 0.22), transparent 23%),
+    radial-gradient(circle at 25% 65%, rgba(8, 4, 69, 0.44), transparent 32%),
+    #07090d;
+}
+
 button {
   font: inherit;
 }
@@ -234,41 +257,9 @@ button {
 
 @keyframes strands-drift { to { stroke-dashoffset: -144; } }
 
-.ferrofluid {
-  position: relative;
-  overflow: hidden;
-  border-radius: 999px;
-  filter: blur(2px) saturate(1.2);
-}
-
-.ferrofluid::before,
-.ferrofluid::after,
-.ferrofluid span {
-  position: absolute;
-  display: block;
-  content: "";
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, rgba(186, 230, 253, 0.9), rgba(96, 165, 250, 0.52) 34%, rgba(30, 64, 175, 0.12) 70%, transparent 73%);
-  mix-blend-mode: screen;
-}
-
-.ferrofluid::before { width: 120px; height: 120px; top: 6px; left: 10px; }
-.ferrofluid::after { width: 100px; height: 100px; right: -14px; bottom: -5px; }
-.ferrofluid span:nth-child(1) { width: 70px; height: 70px; top: 52px; left: 78px; }
-.ferrofluid span:nth-child(2) { width: 52px; height: 52px; top: 14px; right: 43px; }
-.ferrofluid span:nth-child(3) { width: 34px; height: 34px; bottom: 17px; left: 28px; }
-
-.ferrofluid--active::before { animation: ferro-blob-one 5s ease-in-out infinite alternate; }
-.ferrofluid--active::after { animation: ferro-blob-two 4s ease-in-out infinite alternate; }
-.ferrofluid--active span { animation: ferro-blob-three 5.5s ease-in-out infinite alternate; }
-
-@keyframes ferro-blob-one { to { transform: translate(38px, 18px) scale(0.75); } }
-@keyframes ferro-blob-two { to { transform: translate(-42px, -22px) scale(1.22); } }
-@keyframes ferro-blob-three { to { transform: translate(18px, -26px) scale(1.35); } }
-
 .panel {
   border: 1px solid rgba(255, 255, 255, 0.075);
-  background: rgba(11, 14, 18, 0.92);
+  background: rgba(9, 13, 21, 0.84);
   border-radius: 20px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 16px 50px rgba(0, 0, 0, 0.14);
 }

@@ -1,6 +1,5 @@
 import { RotateCcw, Sparkles, TerminalSquare } from "lucide-react";
 import type { AgentPhase } from "@/agent/types";
-import { Ferrofluid } from "@/components/ui/ferrofluid";
 import { LatticeLoader } from "@/components/ui/lattice-loader";
 import { LiquidMetalButton } from "@/components/ui/liquid-metal-button";
 
@@ -20,7 +19,7 @@ export function ControlPanel({ phase, running, onStart, onReset }: ControlPanelP
 
   return (
     <section className="panel relative overflow-hidden p-5">
-      <Ferrofluid active={running} className="pointer-events-none absolute -right-8 -top-12 h-44 w-52 opacity-60" />
+      <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-blue-500/[0.07] blur-3xl" />
       <div className="relative flex min-h-[242px] flex-col justify-between">
         <div>
           <div className="section-kicker">AGENT CONTROL</div>

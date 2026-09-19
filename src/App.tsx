@@ -10,11 +10,13 @@ import { ConstraintPanel } from "@/components/constraint-panel";
 import { ControlPanel } from "@/components/control-panel";
 import { DecisionCard } from "@/components/decision-card";
 import { LivePreview } from "@/components/live-preview";
+import Ferrofluid from "@/components/ui/ferrofluid";
 import { ScrambledText } from "@/components/ui/scrambled-text";
 import { verifyInterface } from "@/verification/constraints";
 
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 const nextPaint = () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+const ferrofluidColors = ["#000000", "#080445", "#003cff"];
 
 function App() {
   const previewRef = useRef<HTMLDivElement>(null);
@@ -216,8 +218,25 @@ function App() {
   };
 
   return (
-    <main className="min-h-screen bg-[#07090d] text-zinc-100 selection:bg-sky-400/20">
-      <div className="mx-auto w-full max-w-[1480px] px-4 pb-12 sm:px-6 lg:px-8">
+    <main className="app-shell min-h-screen bg-[#07090d] text-zinc-100 selection:bg-sky-400/20">
+      <Ferrofluid
+        className="app-ferrofluid"
+        colors={ferrofluidColors}
+        speed={0.5}
+        scale={1}
+        turbulence={1}
+        fluidity={0.1}
+        rimWidth={0.2}
+        sharpness={3}
+        shimmer={1}
+        glow={2}
+        flowDirection="down"
+        opacity={1}
+        mouseInteraction
+        mouseStrength={1}
+        mouseRadius={0.3}
+      />
+      <div className="relative z-10 mx-auto w-full max-w-[1480px] px-4 pb-12 sm:px-6 lg:px-8">
         <header className="flex min-h-20 items-center justify-between border-b border-white/[0.07]">
           <div className="flex items-center gap-3">
             <div className="brand-lockup"><img src={constraintFixLogo} alt="ConstraintFix" /></div>
