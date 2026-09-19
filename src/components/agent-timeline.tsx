@@ -1,6 +1,8 @@
 import { Check, Circle, AlertTriangle, LoaderCircle, X } from "lucide-react";
 import type { AgentEvent, AgentPhase } from "@/agent/types";
 import { cn } from "@/lib/utils";
+import { Strands } from "@/components/ui/strands";
+import { ThoughtLine } from "@/components/ui/thought-line";
 
 interface AgentTimelineProps {
   phase: AgentPhase;
@@ -20,10 +22,13 @@ const activeIndex = (phase: AgentPhase) => phaseOrder.findIndex((step) => step.p
 export function AgentTimeline({ phase, events }: AgentTimelineProps) {
   const index = activeIndex(phase);
   const inDecision = phase === "conflict" || phase === "waiting_for_human" || phase === "replanning";
+  const working = ["auditing", "planning", "patching", "rendering", "verifying", "replanning"].includes(phase);
+  const thoughtSteps = events.slice(-3).map((event) => event.title);
 
   return (
-    <section className="panel min-h-[560px] overflow-hidden">
-      <div className="panel-header">
+    <section className="panel relative min-h-[560px] overflow-hidden">
+      <Strands active={working} className="pointer-events-none absolute inset-x-0 bottom-0 h-36 opacity-40" />
+      <div className="panel-header relative">
         <div>
           <div className="section-kicker">AGENT EXECUTION</div>
           <h2 className="mt-1 text-sm font-semibold text-zinc-100">Repair timeline</h2>
@@ -33,7 +38,7 @@ export function AgentTimeline({ phase, events }: AgentTimelineProps) {
         </span>
       </div>
 
-      <div className="grid gap-7 p-5 md:grid-cols-[170px_1fr]">
+      <div className="relative grid gap-7 p-5 md:grid-cols-[170px_1fr]">
         <div className="space-y-1">
           {phaseOrder.map((step, stepIndex) => {
             const complete = phase === "complete" || index > stepIndex || inDecision;
@@ -63,6 +68,13 @@ export function AgentTimeline({ phase, events }: AgentTimelineProps) {
             </div>
           ) : (
             <div className="space-y-1">
+              <ThoughtLine
+                working={working}
+                label="Agent is reasoning through the repair"
+                doneLabel={phase === "complete" ? "Verified trace settled in" : "Agent trace paused after"}
+                steps={thoughtSteps}
+                className="mb-3 rounded-xl border border-sky-400/10 bg-sky-400/[0.035] px-3 py-2"
+              />
               {events.map((event, idx) => (
                 <div key={event.id} className="relative flex gap-3 py-2.5">
                   {idx < events.length - 1 && <span className="absolute left-[6px] top-[24px] h-[calc(100%-8px)] w-px bg-white/[0.07]" />}

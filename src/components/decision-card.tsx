@@ -1,4 +1,5 @@
 import { ArrowRight, GitBranch, RotateCcw, ShieldAlert, Sparkles } from "lucide-react";
+import { BorderGlow } from "@/components/ui/border-glow";
 import { GradientButton } from "@/components/ui/gradient-button";
 
 interface DecisionCardProps {
@@ -10,7 +11,8 @@ interface DecisionCardProps {
 
 export function DecisionCard({ onPreserveBrand, onAllowChange, onReset, disabled = false }: DecisionCardProps) {
   return (
-    <section className="panel relative overflow-hidden p-5">
+    <BorderGlow className="decision-glow" glowColor="96, 165, 250" animated>
+    <section className="panel relative overflow-hidden border-0 bg-[#0b0e12] p-5">
       <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-amber-300/[0.04] blur-3xl" />
       <div className="relative">
         <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-amber-300">
@@ -64,5 +66,6 @@ export function DecisionCard({ onPreserveBrand, onAllowChange, onReset, disabled
         </div>
       </div>
     </section>
+    </BorderGlow>
   );
 }

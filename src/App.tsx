@@ -1,13 +1,15 @@
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { Braces, Code2, Cpu, ShieldCheck } from "lucide-react";
+import { Code2, Cpu, ShieldCheck } from "lucide-react";
 import { agentProvider, requestedProvider } from "@/agent/provider";
 import type { AgentEvent, AgentPhase, VerificationResult } from "@/agent/types";
+import constraintFixLogo from "@/assets/constraintfix-logo.png";
 import { AgentTimeline } from "@/components/agent-timeline";
 import { ConstraintPanel } from "@/components/constraint-panel";
 import { ControlPanel } from "@/components/control-panel";
 import { DecisionCard } from "@/components/decision-card";
 import { LivePreview } from "@/components/live-preview";
+import { ScrambledText } from "@/components/ui/scrambled-text";
 import { verifyInterface } from "@/verification/constraints";
 
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -217,9 +219,8 @@ function App() {
       <div className="mx-auto w-full max-w-[1480px] px-4 pb-12 sm:px-6 lg:px-8">
         <header className="flex min-h-20 items-center justify-between border-b border-white/[0.07]">
           <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] shadow-inner shadow-white/[0.03]"><Braces size={16} className="text-zinc-300" /></div>
+            <div className="brand-lockup"><img src={constraintFixLogo} alt="ConstraintFix" /></div>
             <div>
-              <div className="text-sm font-semibold tracking-[-0.02em]">Constraint<span className="text-sky-400">Fix</span></div>
               <div className="mt-0.5 text-[10px] text-zinc-600">Constraint-aware frontend repair agent</div>
             </div>
           </div>
@@ -234,7 +235,7 @@ function App() {
           <div>
             <div className="section-kicker">NEXT-GEN PRODUCTIVITY & AUTOMATION</div>
             <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.055em] text-white sm:text-5xl lg:text-6xl">
-              Agents should fix interfaces <span className="text-zinc-600">without breaking what matters.</span>
+              Agents should fix interfaces <ScrambledText className="text-zinc-500">without breaking what matters.</ScrambledText>
             </h1>
             <p className="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">
               ConstraintFix lets a coding agent audit, repair, render, observe, recover from conflicting requirements, involve a human only when judgment is needed, and prove the final result with deterministic tools.

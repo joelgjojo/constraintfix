@@ -1,5 +1,7 @@
 import { RotateCcw, Sparkles, TerminalSquare } from "lucide-react";
 import type { AgentPhase } from "@/agent/types";
+import { Ferrofluid } from "@/components/ui/ferrofluid";
+import { LatticeLoader } from "@/components/ui/lattice-loader";
 import { LiquidMetalButton } from "@/components/ui/liquid-metal-button";
 
 interface ControlPanelProps {
@@ -12,10 +14,13 @@ interface ControlPanelProps {
 export function ControlPanel({ phase, running, onStart, onReset }: ControlPanelProps) {
   const complete = phase === "complete";
   const waiting = phase === "waiting_for_human";
+  const failed = phase === "failed";
+  const loaderStatus = complete ? "done" : failed ? "error" : running ? "working" : "idle";
+  const loaderLabel = complete ? "Proof complete" : failed ? "Repair stopped" : running ? "Deterministic checks live" : "Ready to verify";
 
   return (
     <section className="panel relative overflow-hidden p-5">
-      <div className="pointer-events-none absolute inset-x-0 -top-36 mx-auto h-64 w-64 rounded-full bg-white/[0.035] blur-3xl" />
+      <Ferrofluid active={running} className="pointer-events-none absolute -right-8 -top-12 h-44 w-52 opacity-60" />
       <div className="relative flex min-h-[242px] flex-col justify-between">
         <div>
           <div className="section-kicker">AGENT CONTROL</div>
@@ -28,6 +33,7 @@ export function ControlPanel({ phase, running, onStart, onReset }: ControlPanelP
               <p className="mt-0.5 text-[11px] text-zinc-600">
                 {complete ? "All required constraints passed deterministic verification." : waiting ? "Autonomy stops where product judgment begins." : "The decision layer can use OpenAI, while execution and proof stay deterministic."}
               </p>
+              <LatticeLoader status={loaderStatus} label={loaderLabel} className="mt-2" />
             </div>
           </div>
         </div>

@@ -46,7 +46,7 @@ verified result, conflict, or human gate
 
 `src/agent/types.ts` is the contract. The application only depends on `AgentProvider`; it does not depend on a model SDK. `src/agent/provider.ts` selects the provider, and `src/agent/fallback-agent.ts` keeps the demo moving if the decision service cannot respond.
 
-Reusable app-shell controls live in `src/components/ui`: `LiquidMetalButton` is the primary Start Repair CTA and `GradientButton` is used for the human decision controls. The deliberately broken fixture remains isolated at `src/fixtures/pricing-card.tsx`.
+Reusable app-shell controls live in `src/components/ui`: `LiquidMetalButton` is the primary Start Repair CTA and `GradientButton` is used for the human decision controls. The supplied ConstraintFix mark is used in the application header, while the blue interaction layer stays outside the deliberately broken fixture: `ScrambledText` gives the headline a hover response, `CursorGrid` marks the live render surface, `ThoughtLine` and `LatticeLoader` expose reasoning progress, `Strands` and `Ferrofluid` add quiet agent-state motion, and `BorderGlow` focuses the human decision. The deliberately broken fixture remains isolated at `src/fixtures/pricing-card.tsx`.
 
 ## What is real
 
