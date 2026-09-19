@@ -7,6 +7,12 @@ interface ConstraintReceiptProps {
   receipt: ConstraintReceiptData;
 }
 
+function sourceLabel(source: ConstraintReceiptData["source"]) {
+  if (source === "codex_live") return "OpenAI live";
+  if (source === "codex_replay") return "OpenAI replay";
+  return source;
+}
+
 export function ConstraintReceipt({ receipt }: ConstraintReceiptProps) {
   const hasException = receipt.transactionStatus === "approved_exception";
   const [exported, setExported] = useState(false);
@@ -38,7 +44,7 @@ export function ConstraintReceipt({ receipt }: ConstraintReceiptProps) {
             <span className={hasException ? "text-amber-300" : "text-emerald-300"}>{hasException ? "Approved exception" : "Accepted and verified"}</span>
           </div>
           <p className="mt-1 text-[11px] text-zinc-500">
-            {receipt.component} · source {receipt.source} · transaction {receipt.transactionId.slice(0, 8)} · {receipt.candidateHistory.length} candidates · {receipt.rollbackCount} automatic rollback · {receipt.humanIntervention.choice ? `human choice: ${receipt.humanIntervention.choice.replaceAll("_", " ")}` : "no human override"}
+            {receipt.component} · source {sourceLabel(receipt.source)} · transaction {receipt.transactionId.slice(0, 8)} · {receipt.candidateHistory.length} candidates · {receipt.rollbackCount} automatic rollback · {receipt.humanIntervention.choice ? `human choice: ${receipt.humanIntervention.choice.replaceAll("_", " ")}` : "no human override"}
           </p>
           <p className="mt-1 text-[10px] text-zinc-600">
             Run eval · {receipt.evaluation.attempts} attempted · {receipt.evaluation.rejectedCandidates} rejected · {receipt.evaluation.rollbacks} rolled back · {receipt.evaluation.modelCalls} model call{receipt.evaluation.modelCalls === 1 ? "" : "s"} · {receipt.evaluation.liveThreadUsed ? "live thread reused" : "no live thread"} · final constraints {receipt.evaluation.finalConstraints}
