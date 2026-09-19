@@ -1,4 +1,3 @@
-import OpenAI from "openai";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { isStructuredRepairCandidate, openaiCandidateSchema } from "../../src/agent/candidate-schema";
 import type { StructuredRepairCandidate } from "../../src/agent/types";
@@ -84,13 +83,70 @@ function isAllowedCandidate(candidate: unknown, stage: LiveStage): candidate is 
   return isStructuredRepairCandidate(candidate) && candidate.action === expectedAction(stage);
 }
 
-function publicApiError(error: unknown) {
-  if (error instanceof OpenAI.AuthenticationError) return { status: 503, message: "Live planning authentication failed." };
-  if (error instanceof OpenAI.RateLimitError) return { status: 429, message: "Live planning is temporarily rate limited." };
-  if (error instanceof OpenAI.APIConnectionError || error instanceof OpenAI.APIConnectionTimeoutError) {
-    return { status: 503, message: "Live planning service is temporarily unavailable." };
+interface ResponsesApiBody {
+  output?: Array<{
+    content?: Array<{
+      type?: string;
+      text?: string;
+    }>;
+  }>;
+}
+
+function outputText(body: ResponsesApiBody) {
+  for (const item of body.output ?? []) {
+    for (const content of item.content ?? []) {
+      if (content.type === "output_text" && typeof content.text === "string") return content.text;
+    }
   }
-  return { status: 502, message: "Live planning returned an invalid response." };
+  return null;
+}
+
+async function requestCandidate(input: LiveDecisionInput) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25_000);
+  try {
+    const apiResponse = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL ?? "gpt-5-mini",
+        input: planningPrompt(input),
+        store: false,
+        max_output_tokens: 360,
+        text: {
+          format: {
+            type: "json_schema",
+            name: "constraintfix_repair_candidate",
+            strict: true,
+            schema: openaiCandidateSchema,
+          },
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!apiResponse.ok) {
+      if (apiResponse.status === 401 || apiResponse.status === 403) throw { status: 503, message: "Live planning authentication failed." };
+      if (apiResponse.status === 429) throw { status: 429, message: "Live planning is temporarily rate limited." };
+      throw { status: 502, message: "Live planning returned an invalid response." };
+    }
+
+    const responseBody = await apiResponse.json() as ResponsesApiBody;
+    const text = outputText(responseBody);
+    if (!text) throw { status: 422, message: "Live planning returned an empty repair candidate." };
+    return JSON.parse(text) as unknown;
+  } catch (error) {
+    if (error && typeof error === "object" && "status" in error && "message" in error) throw error;
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw { status: 503, message: "Live planning timed out." };
+    }
+    throw { status: 503, message: "Live planning service is temporarily unavailable." };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 /**
@@ -117,27 +173,7 @@ export default async function handler(request: IncomingMessage, response: Server
       return;
     }
 
-    const client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      timeout: 25_000,
-      maxRetries: 0,
-    });
-    const completion = await client.responses.create({
-      model: process.env.OPENAI_MODEL ?? "gpt-5-mini",
-      input: planningPrompt(payload),
-      store: false,
-      max_output_tokens: 360,
-      text: {
-        format: {
-          type: "json_schema",
-          name: "constraintfix_repair_candidate",
-          strict: true,
-          schema: openaiCandidateSchema,
-        },
-      },
-    });
-
-    const candidate: unknown = JSON.parse(completion.output_text);
+    const candidate = await requestCandidate(payload);
     if (!isAllowedCandidate(candidate, payload.stage)) {
       writeJson(response, 422, { error: "Live planning returned an invalid repair candidate." });
       return;
@@ -151,9 +187,9 @@ export default async function handler(request: IncomingMessage, response: Server
       usedThread: false,
     });
   } catch (error) {
-    const publicError = publicApiError(error);
-    writeJson(response, publicError.status, { error: publicError.message });
+    const publicError = error as { status?: number; message?: string };
+    writeJson(response, publicError.status ?? 502, { error: publicError.message ?? "Live planning returned an invalid response." });
   }
 }
 
-export const __testables = { expectedAction, isAllowedCandidate, isLiveInput, planningPrompt };
+export const __testables = { expectedAction, isAllowedCandidate, isLiveInput, outputText, planningPrompt };
