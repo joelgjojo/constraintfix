@@ -81,8 +81,23 @@ export interface RepairTransaction {
   initialVerification: VerificationSnapshot;
   candidates: RepairCandidate[];
   rollbackCount: number;
+  modelCalls: number;
+  liveThreadActive: boolean;
   humanIntervention: HumanIntervention;
   finalVerification?: VerificationSnapshot;
+}
+
+export interface RunEvaluation {
+  sourceTrail: DecisionSource[];
+  attempts: number;
+  acceptedCandidates: number;
+  rejectedCandidates: number;
+  rollbacks: number;
+  humanInterventions: number;
+  modelCalls: number;
+  liveThreadUsed: boolean;
+  resolutionMs: number | null;
+  finalConstraints: "3/3" | "2/3" | "1/3" | "0/3";
 }
 
 export interface ConstraintReceipt {
@@ -99,6 +114,7 @@ export interface ConstraintReceipt {
   transactionStatus: TransactionStatus;
   rollbackCount: number;
   humanIntervention: HumanIntervention;
+  evaluation: RunEvaluation;
 }
 
 export type { VerificationResult };

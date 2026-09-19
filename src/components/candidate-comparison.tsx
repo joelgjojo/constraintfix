@@ -30,7 +30,7 @@ export function CandidateComparison({ candidates }: CandidateComparisonProps) {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-semibold text-zinc-200">{candidate.label}</div>
-                  <div className="mt-0.5 text-[10px] text-zinc-600">{candidate.action}</div>
+                  <div className="mt-0.5 text-[10px] text-zinc-600">{candidate.action} · {candidate.source.replaceAll("_", " ")}</div>
                 </div>
                 <span className={cn("inline-flex items-center gap-1 text-[9px] font-bold tracking-[0.08em]", rejected ? "text-rose-300" : candidate.status === "accepted" ? "text-emerald-300" : approvedException ? "text-amber-300" : "text-zinc-600")}>
                   {rejected ? <ShieldAlert size={11} /> : candidate.status === "accepted" ? <Check size={11} /> : approvedException ? <Circle size={10} /> : null}

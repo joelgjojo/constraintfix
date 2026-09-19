@@ -13,7 +13,10 @@ export type AgentPhase =
 
 export type ConstraintStatus = "pending" | "pass" | "fail";
 export type RiskLevel = "low" | "medium" | "high";
-export type DecisionSource = "mock" | "openai" | "demo_fallback";
+export type AgentMode = "mock" | "live" | "replay";
+export type DecisionSource = "mock" | "codex_live" | "codex_replay" | "demo_fallback";
+export type RepairAction = "add_accessible_name" | "darken_cta" | "change_text_color" | "none";
+export type RepairDecisionType = "apply_patch" | "request_human" | "replan" | "complete";
 
 export interface AgentEvent {
   id: string;
@@ -41,13 +44,31 @@ export interface VerificationResult {
   brandColor: string;
 }
 
+/**
+ * This is the only model-shaped object that crosses the server boundary. The
+ * deterministic executor maps its `action` onto one of the four fixture
+ * stages; it never evaluates model-produced code or CSS.
+ */
+export interface StructuredRepairCandidate {
+  action: Extract<RepairAction, "darken_cta" | "change_text_color">;
+  proposedChange: string;
+  expectedEffect: string;
+  risk: RiskLevel;
+  confidence: number;
+  rationale: string;
+  constraints: string[];
+}
+
 export interface RepairDecision {
-  type: "apply_patch" | "request_human" | "replan" | "complete";
-  action: "add_accessible_name" | "darken_cta" | "change_text_color" | "none";
+  type: RepairDecisionType;
+  action: RepairAction;
   reason: string;
   risk: RiskLevel;
   source: DecisionSource;
   fallbackNotice?: string;
+  candidate?: StructuredRepairCandidate;
+  modelCalls?: number;
+  usedThread?: boolean;
 }
 
 export interface AgentDecisionInput {
@@ -55,6 +76,7 @@ export interface AgentDecisionInput {
   stage: number;
   verification: VerificationResult | null;
   humanChoice?: "preserve_brand" | "allow_change";
+  transactionId?: string;
 }
 
 export interface AgentProvider {

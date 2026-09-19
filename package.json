@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --pretty false"
+    "typecheck": "tsc -b --pretty false",
+    "test": "TSX_TSCONFIG_PATH=tsconfig.app.json node --import tsx --test tests/agent-contract.test.ts"
   },
   "dependencies": {
+    "@openai/codex-sdk": "^0.155.1",
     "@paper-design/shaders": "0.0.81",
     "@radix-ui/react-slot": "^1.1.2",
     "axe-core": "^4.10.2",
@@ -17,7 +19,6 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
     "ogl": "^1.0.11",
-    "openai": "^7.19.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.6.0"
@@ -29,6 +30,7 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "tailwindcss": "^4.0.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.7.2",
     "vite": "^6.0.7"
   }

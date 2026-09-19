@@ -7,9 +7,13 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "types": ["node"],
     "strict": true,
     "noEmit": true
   },
-  "include": ["vite.config.ts", "server"]
+  "include": ["vite.config.ts", "server", "src/agent/candidate-schema.ts", "src/agent/types.ts"]
 }

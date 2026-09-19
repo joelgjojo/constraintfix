@@ -28,8 +28,8 @@ const nextPaint = () => new Promise<void>((resolve) => requestAnimationFrame(() 
 const ferrofluidColors = ["#000000", "#080445", "#003cff"];
 
 function configuredSource(): DecisionSource {
-  const mode = import.meta.env.VITE_AGENT_MODE ?? import.meta.env.VITE_AGENT_PROVIDER;
-  return mode === "live" || mode === "openai" ? "openai" : "mock";
+  const mode = (import.meta.env.VITE_AGENT_MODE ?? import.meta.env.VITE_AGENT_PROVIDER ?? "mock").toLowerCase();
+  return mode === "live" ? "codex_live" : mode === "replay" ? "codex_replay" : "mock";
 }
 
 function App() {
@@ -142,15 +142,8 @@ function App() {
       );
 
       setPhase("planning");
-      addEvent("planning", "Selecting low-risk autonomous repair", "The decision provider receives evidence; deterministic tools remain the authority.");
-      const firstDecision = await requestDecision({ phase: "planning", stage: 0, verification: initial });
-      currentTransaction = {
-        ...currentTransaction,
-        source: firstDecision.source,
-        candidates: currentTransaction.candidates.map((candidate) => ({ ...candidate, source: firstDecision.source })),
-      };
-      setTransaction(currentTransaction);
-      addEvent("planning", "Low-risk action approved", firstDecision.reason, "success");
+      addEvent("planning", "Selecting low-risk autonomous repair", "The semantic fix is policy-mapped; candidate planning follows its deterministic proof.");
+      addEvent("planning", "Low-risk action approved", "The unnamed icon button receives aria-label=\"Plan information\". No model output is needed for this bounded semantic repair.", "success");
 
       setPhase("patching");
       addEvent("patching", "Applied semantic repair", "Inserted aria-label=\"Plan information\" on the icon button.", "success");
@@ -167,14 +160,54 @@ function App() {
       );
 
       setPhase("planning");
-      const secondDecision = await requestDecision({ phase: "planning", stage: 1, verification: afterSafeFix });
+      const secondDecision = await requestDecision({
+        phase: "planning",
+        stage: 1,
+        verification: afterSafeFix,
+        transactionId: currentTransaction.transactionId,
+      });
       currentTransaction = updateCandidate(currentTransaction, "candidate-a", {
         status: "running",
         source: secondDecision.source,
         note: secondDecision.reason,
+        label: secondDecision.action === "change_text_color" ? "Candidate A · preserve brand" : "Candidate A · darken CTA",
+        action: secondDecision.action === "change_text_color" ? "Keep #60A5FA · set text #0F172A" : "#60A5FA → #2563EB",
       });
+      currentTransaction = { ...currentTransaction, source: secondDecision.source };
+      currentTransaction = {
+        ...currentTransaction,
+        modelCalls: Math.max(currentTransaction.modelCalls, secondDecision.modelCalls ?? 0),
+        liveThreadActive: Boolean(secondDecision.usedThread && secondDecision.source === "codex_live"),
+      };
       setTransaction(currentTransaction);
-      addEvent("planning", "Candidate A started", secondDecision.reason);
+      addEvent("planning", `${secondDecision.source === "codex_live" ? "CODEX LIVE" : secondDecision.source === "codex_replay" ? "CODEX REPLAY" : "MOCK"} Candidate A started`, secondDecision.reason);
+
+      if (secondDecision.action === "change_text_color") {
+        setPhase("patching");
+        addEvent("patching", "Applied Candidate A", "Kept #60A5FA and changed CTA text #FFFFFF → #0F172A.", "success");
+        await setRenderedStage(3);
+        setPhase("verifying");
+        addEvent("verifying", "Verifying the first candidate", "The candidate can be accepted immediately only after deterministic proof.");
+        const directResult = await verify();
+        const directSnapshot = toVerificationSnapshot(directResult);
+        if (!directSnapshot.overallPass) throw new Error("The first candidate failed deterministic verification.");
+        currentTransaction = updateTransaction(
+          updateCandidate(currentTransaction, "candidate-a", {
+            status: "accepted",
+            verification: directSnapshot,
+            violatedConstraints: [],
+            note: "All deterministic constraints passed on the first candidate.",
+          }),
+          "accepted",
+          { completedAt: new Date().toISOString(), finalVerification: directSnapshot },
+        );
+        setTransaction(currentTransaction);
+        setReceipt(createConstraintReceipt(currentTransaction));
+        setPhase("complete");
+        addEvent("complete", "TRANSACTION ACCEPTED · first candidate", `Accessibility PASS · Brand PASS · Layout PASS · contrast ${directResult.contrastRatio.toFixed(2)}:1`, "success");
+        addEvent("complete", "Constraint receipt generated", "CF-018 records the structured candidate and deterministic proof.", "success");
+        return;
+      }
 
       setPhase("patching");
       addEvent("patching", "Applied Candidate A", "Changed CTA background #60A5FA → #2563EB to improve white-text contrast.");
@@ -217,16 +250,19 @@ function App() {
         "success",
       );
 
-      const conflictDecision = await requestDecision({ phase: "conflict", stage: 2, verification: conflictResult });
-      if (conflictDecision.type !== "request_human") {
-        throw new Error("Decision provider returned an unsafe conflict response.");
-      }
       currentTransaction = updateTransaction(currentTransaction, "waiting_for_human", {
-        humanIntervention: { required: true, reason: conflictDecision.reason },
+        humanIntervention: { required: true, reason: "Candidate A changed a protected brand token despite passing accessibility and layout." },
       });
       setTransaction(currentTransaction);
       setPhase("waiting_for_human");
-      addEvent("waiting_for_human", "Autonomy paused for product judgment", conflictDecision.reason, "warning");
+      addEvent(
+        "waiting_for_human",
+        "Autonomy paused for product judgment",
+        currentTransaction.liveThreadActive
+          ? "The candidate was rejected by the protected-token gate. Preserve Brand continues the same Codex thread with this machine feedback."
+          : "The candidate was rejected by the protected-token gate. Preserve Brand applies the verified replan without bypassing the contract.",
+        "warning",
+      );
     } catch (error) {
       console.error(error);
       failTransaction(error instanceof Error ? error.message : "Unknown transaction error.");
@@ -255,10 +291,12 @@ function App() {
         stage: 2,
         verification,
         humanChoice: "preserve_brand",
+        transactionId: currentTransaction.transactionId,
       });
       currentTransaction = {
         ...currentTransaction,
         source: decision.source,
+        modelCalls: Math.max(currentTransaction.modelCalls, decision.modelCalls ?? 0),
         candidates: currentTransaction.candidates.map((candidate) => candidate.id === "candidate-b" ? { ...candidate, source: decision.source, note: decision.reason } : candidate),
       };
       setTransaction(currentTransaction);
@@ -314,13 +352,7 @@ function App() {
     setTransaction(currentTransaction);
 
     try {
-      const decision = await requestDecision({
-        phase: "waiting_for_human",
-        stage: 2,
-        verification,
-        humanChoice: "allow_change",
-      });
-      addEvent("waiting_for_human", "Human-approved exception recorded", decision.reason, "warning");
+      addEvent("waiting_for_human", "Human-approved exception recorded", "The protected-token exception is explicit and recorded; no second model turn is needed.", "warning");
       setPhase("patching");
       await setRenderedStage(2);
       setPhase("verifying");

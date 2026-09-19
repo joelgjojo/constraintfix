@@ -39,6 +39,9 @@ export function ConstraintReceipt({ receipt }: ConstraintReceiptProps) {
           <p className="mt-1 text-[11px] text-zinc-500">
             {receipt.component} · source {receipt.source} · transaction {receipt.transactionId.slice(0, 8)} · {receipt.candidateHistory.length} candidates · {receipt.rollbackCount} automatic rollback · {receipt.humanIntervention.choice ? `human choice: ${receipt.humanIntervention.choice.replaceAll("_", " ")}` : "no human override"}
           </p>
+          <p className="mt-1 text-[10px] text-zinc-600">
+            Run eval · {receipt.evaluation.attempts} attempted · {receipt.evaluation.rejectedCandidates} rejected · {receipt.evaluation.rollbacks} rolled back · {receipt.evaluation.modelCalls} model call{receipt.evaluation.modelCalls === 1 ? "" : "s"} · {receipt.evaluation.liveThreadUsed ? "live thread reused" : "no live thread"} · final constraints {receipt.evaluation.finalConstraints}
+          </p>
         </div>
       </div>
       <button type="button" onClick={exportReceipt} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 text-xs font-semibold text-zinc-200 transition hover:border-sky-300/30 hover:bg-sky-300/[0.07]">

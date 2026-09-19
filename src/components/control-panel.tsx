@@ -30,7 +30,7 @@ export function ControlPanel({ phase, running, onStart, onReset }: ControlPanelP
                 {complete ? "Verified repair complete" : waiting ? "Agent paused for judgment" : running ? "ConstraintFix is working" : "Ready to inspect the interface"}
               </h2>
               <p className="mt-0.5 text-[11px] text-zinc-600">
-                {complete ? "All required constraints passed deterministic verification." : waiting ? "Autonomy stops where product judgment begins." : "The decision layer can use OpenAI, while execution and proof stay deterministic."}
+                {complete ? "All required constraints passed deterministic verification." : waiting ? "Autonomy stops where product judgment begins." : "Mock, replay, or server-only Codex can propose; execution and proof stay deterministic."}
               </p>
               <LatticeLoader status={loaderStatus} label={loaderLabel} className="mt-2" />
             </div>

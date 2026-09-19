@@ -1,23 +1,20 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { openAIDecisionProxy } from "./server/openai-proxy";
+import { codexDecisionProxy } from "./server/codex-proxy";
 
 export default defineConfig(({ mode }) => {
   const environment = loadEnv(mode, process.cwd(), "");
-  const agentMode = (environment.VITE_AGENT_MODE ?? environment.VITE_AGENT_PROVIDER ?? "mock").toLowerCase();
-  const liveDecisionMode = agentMode === "live" || agentMode === "openai";
+  const agentMode = (process.env.VITE_AGENT_MODE ?? environment.VITE_AGENT_MODE ?? environment.VITE_AGENT_PROVIDER ?? "mock").toLowerCase();
+  const liveDecisionMode = agentMode === "live";
 
   return {
     plugins: [
       react(),
       tailwindcss(),
-      // Mock mode does not register an API route, even when a local key exists.
+      // Mock/replay mode does not register a model API route, even when local auth exists.
       ...(liveDecisionMode
-        ? [openAIDecisionProxy({
-            apiKey: environment.OPENAI_API_KEY,
-            model: environment.OPENAI_MODEL || "gpt-5-mini",
-          })]
+        ? [codexDecisionProxy({ apiKey: environment.CODEX_API_KEY })]
         : []),
     ],
     resolve: {

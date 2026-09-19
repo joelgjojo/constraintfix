@@ -85,6 +85,8 @@ export function createRepairTransaction(initialVerification: VerificationSnapsho
     initialVerification,
     candidates: [candidate("candidate-a", source), candidate("candidate-b", source)],
     rollbackCount: 0,
+    modelCalls: 0,
+    liveThreadActive: false,
     humanIntervention: { required: false },
   };
 }
@@ -130,5 +132,17 @@ export function createConstraintReceipt(transaction: RepairTransaction): Constra
     transactionStatus: transaction.status,
     rollbackCount: transaction.rollbackCount,
     humanIntervention: transaction.humanIntervention,
+    evaluation: {
+      sourceTrail: Array.from(new Set(transaction.candidates.filter((candidate) => candidate.status !== "pending").map((candidate) => candidate.source))),
+      attempts: transaction.candidates.filter((candidate) => candidate.status !== "pending").length,
+      acceptedCandidates: transaction.candidates.filter((candidate) => candidate.status === "accepted" || candidate.status === "approved_exception").length,
+      rejectedCandidates: transaction.candidates.filter((candidate) => candidate.status === "rejected").length,
+      rollbacks: transaction.rollbackCount,
+      humanInterventions: transaction.humanIntervention.choice ? 1 : 0,
+      modelCalls: transaction.modelCalls,
+      liveThreadUsed: transaction.liveThreadActive,
+      resolutionMs: transaction.completedAt ? Math.max(0, new Date(transaction.completedAt).getTime() - new Date(transaction.startedAt).getTime()) : null,
+      finalConstraints: `${Number(transaction.finalVerification.accessibility.pass) + Number(transaction.finalVerification.brand.pass) + Number(transaction.finalVerification.layout.pass)}/3` as "3/3" | "2/3" | "1/3" | "0/3",
+    },
   };
 }
