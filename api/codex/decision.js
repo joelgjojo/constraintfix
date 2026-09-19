@@ -79,6 +79,7 @@ function planningPrompt(input) {
       "You are the bounded planning layer for ConstraintFix, a frontend repair demo.",
       "A previous contrast repair passed accessibility and 375px layout, but changed protected token #60A5FA. The browser rolled it back and the human chose Preserve Brand.",
       "Return one strict JSON candidate. Its action must be change_text_color. That action maps only to CTA foreground #FFFFFF -> #0F172A while retaining #60A5FA.",
+      "Keep rationale under 180 characters and return at most three concise constraint labels.",
       "Do not write code, invoke tools, claim verification passed, or propose a different action. Deterministic browser verification is the authority.",
       `Observed deterministic evidence: ${JSON.stringify(snapshot(input))}`,
     ].join("\n");
@@ -88,6 +89,7 @@ function planningPrompt(input) {
     "You are the bounded planning layer for ConstraintFix, a frontend repair demo.",
     "The safe aria-label repair already fixed the semantic issue. A contrast repair is now needed.",
     "Return one strict JSON candidate. Its action must be darken_cta. That action maps only to CTA background #60A5FA -> #2563EB and intentionally requires protected-token verification and a possible human decision.",
+    "Keep rationale under 180 characters and return at most three concise constraint labels.",
     "Do not write code, invoke tools, claim verification passed, or propose a different action. Deterministic browser verification is the authority.",
     `Observed deterministic evidence: ${JSON.stringify(snapshot(input))}`,
   ].join("\n");
@@ -99,6 +101,19 @@ function expectedAction(stage) {
 
 function isAllowedCandidate(candidate, stage) {
   return isStructuredRepairCandidate(candidate) && candidate.action === expectedAction(stage);
+}
+
+function boundCandidate(candidate) {
+  if (!candidate || typeof candidate !== "object") return candidate;
+  return {
+    ...candidate,
+    proposedChange: typeof candidate.proposedChange === "string" ? candidate.proposedChange.trim().slice(0, 180) : candidate.proposedChange,
+    expectedEffect: typeof candidate.expectedEffect === "string" ? candidate.expectedEffect.trim().slice(0, 180) : candidate.expectedEffect,
+    rationale: typeof candidate.rationale === "string" ? candidate.rationale.trim().slice(0, 280) : candidate.rationale,
+    constraints: Array.isArray(candidate.constraints)
+      ? candidate.constraints.filter((constraint) => typeof constraint === "string" && constraint.trim()).slice(0, 4).map((constraint) => constraint.trim().slice(0, 80))
+      : candidate.constraints,
+  };
 }
 
 function invalidCandidateFields(candidate, stage) {
@@ -197,7 +212,7 @@ export default async function handler(request, response) {
       return;
     }
 
-    const candidate = await requestCandidate(payload);
+    const candidate = boundCandidate(await requestCandidate(payload));
     if (!isAllowedCandidate(candidate, payload.stage)) {
       writeJson(response, 422, { error: "Live planning returned an invalid repair candidate.", invalidFields: invalidCandidateFields(candidate, payload.stage) });
       return;
@@ -216,4 +231,4 @@ export default async function handler(request, response) {
   }
 }
 
-export const __testables = { expectedAction, invalidCandidateFields, isAllowedCandidate, isLiveInput, outputText, planningPrompt };
+export const __testables = { boundCandidate, expectedAction, invalidCandidateFields, isAllowedCandidate, isLiveInput, outputText, planningPrompt };
