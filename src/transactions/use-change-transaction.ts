@@ -1,0 +1,128 @@
+import { useRef, useState, type RefObject } from 'react';
+import { flushSync } from 'react-dom';
+import type { AgentEvent, AgentPhase, AgentMode } from '@/agent/types';
+import { providerForMode } from '@/agent/provider';
+import { createOperationGate } from './interaction';
+import { acceptance, applyOperations, changeRequest, createChangeReceipt, failureList, initialFixtures, newTransaction, restoreBaseline, sourceLabel, type ChangeReceipt, type ChangeSetCandidate, type ChangeTransaction, type FixtureState, type PolicyChoice, type VerificationMatrix } from './change-set';
+import { verifyChangeSet } from '@/verification/change-set';
+const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: AgentMode) {
+  const [fixtures, setFixtures] = useState(initialFixtures);
+  const [phase, setPhase] = useState<AgentPhase>('idle');
+  const [events, setEvents] = useState<AgentEvent[]>([]);
+  const [tx, setTx] = useState<ChangeTransaction | null>(null);
+  const [matrix, setMatrix] = useState<VerificationMatrix | null>(null);
+  const [matrixLabel, setMatrixLabel] = useState('Awaiting browser measurements');
+  const [receipt, setReceipt] = useState<ChangeReceipt | null>(null);
+  const [running, setRunning] = useState(false);
+  const gate = useRef(createOperationGate());
+  const currentPhase = useRef<AgentPhase>('idle');
+  const move = (value: AgentPhase) => { currentPhase.current = value; setPhase(value); };
+  const event = (phase: AgentPhase, title: string, detail: string, tone: AgentEvent['tone'] = 'neutral') => setEvents(e => [...e, { id: crypto.randomUUID(), timestamp: Date.now(), phase, title, detail, tone }]);
+  const render = async (state: FixtureState) => {
+    move('rendering');
+    flushSync(() => setFixtures({ ...state }));
+    // CSS colors settle before computed-style checks; all three fixtures commit together.
+    await pause(260);
+    if (!root.current || root.current.dataset.renderState !== JSON.stringify(state)) throw new Error('Atomic render did not commit.');
+  };
+  const measure = async (record: ChangeTransaction, kind: ChangeTransaction['audits'][number]['kind']) => {
+    if (!root.current) throw new Error('Missing browser verification surface.');
+    move('verifying');
+    const result = await verifyChangeSet(root.current);
+    record.audits.push({ kind, result });
+    return result;
+  };
+  const publish = (record: ChangeTransaction) => setTx({ ...record, audits: [...record.audits], changeSet: { ...record.changeSet, candidates: [...record.changeSet.candidates] } });
+  const decide = async (record: ChangeTransaction, feedback: VerificationMatrix, choice?: PolicyChoice): Promise<ChangeSetCandidate> => {
+    move(choice ? 'replanning' : 'planning');
+    const decision = await providerForMode(mode).decide({ phase: choice ? 'replanning' : 'planning', stage: choice ? 2 : 1, humanChoice: choice, transactionId: record.id, verification: feedback.fixtures[0], changeSet: { request: changeRequest, feedback } });
+    if (!decision.operations) throw new Error('Planner returned no multi-file operations.');
+    record.modelCalls += decision.modelCalls ?? 0;
+    if (decision.fallbackNotice) { record.notices.push(decision.fallbackNotice); event('planning', 'Replay fallback', decision.fallbackNotice, 'warning'); }
+    record.changeSet.source = decision.source;
+    return { id: choice ? 'candidate-b' : 'candidate-a', summary: decision.reason, source: decision.source, operations: decision.operations, status: 'proposed' };
+  };
+  const stopSafely = async (record: ChangeTransaction, error: unknown) => {
+    if (record.baseline) {
+      try {
+        const restored = restoreBaseline(record);
+        await render(restored);
+        const proof = await measure(record, 'rollback');
+        record.rollbackCount += 1;
+        record.rollback = { restored, verified: proof.overallPass, result: proof };
+        setMatrix(proof); setMatrixLabel('Failure recovery · current baseline');
+      } catch { event('failed', 'Recovery needs attention', 'Could not verify restoration. No candidate has been accepted.', 'danger'); }
+    }
+    record.status = 'failed'; publish(record); move('failed');
+    event('failed', 'Transaction stopped safely', error instanceof Error ? error.message : 'Verification could not complete.', 'danger');
+  };
+  const start = async () => {
+    if (currentPhase.current !== 'idle' || !gate.current.tryAcquire()) return;
+    setRunning(true);
+    const record = newTransaction(mode === 'live' ? 'codex_live' : mode === 'replay' ? 'codex_replay' : 'mock');
+    setEvents([]); setReceipt(null); setMatrix(null); publish(record);
+    try {
+      await render(initialFixtures()); move('auditing');
+      event('auditing', 'Transaction started · three files', 'Inspecting the original rendered checkout experience.');
+      const original = await measure(record, 'initial'); setMatrix(original); setMatrixLabel('Original render');
+      event('auditing', 'Safe semantic repair · AUTO', 'The pricing info button lacks a name. Add aria-label before establishing the transaction baseline.');
+      const baseline = { ...initialFixtures(), pricing: 1 };
+      await render(baseline);
+      const baselineResult = await measure(record, 'baseline');
+      if (!baselineResult.overallPass) throw new Error('Cannot apply a change set without a verified baseline.');
+      record.baseline = baseline;
+      event('verifying', 'Verified baseline · 9/9', 'Accessible names, protected surfaces and all 375px containers verified.', 'success');
+      const proposal = await decide(record, baselineResult);
+      record.changeSet.candidates.push(proposal); publish(record);
+      event('planning', `${sourceLabel(proposal.source)} · three-file proposal`, proposal.summary);
+      move('patching'); const next = applyOperations(baseline, proposal.operations);
+      await render(next); event('rendering', 'Applied as one transaction', 'PricingCard.tsx + MobileHeader.tsx + CheckoutForm.tsx');
+      await pause(900);
+      const result = await measure(record, 'candidate-a');
+      proposal.verification = result; proposal.status = acceptance(result);
+      setMatrix(result); setMatrixLabel('Candidate A · measured before rollback');
+      if (proposal.status !== 'rejected') throw new Error('This controlled proposal did not exhibit the expected regressions; inspect the fixtures.');
+      record.status = 'rejected'; publish(record); move('conflict');
+      event('conflict', 'CHANGE SET REJECTED', failureList(result).join(' · '), 'danger');
+      await pause(1600);
+      event('replanning', 'ROLLING BACK 3-FILE CHANGE SET', 'Restoring one verified snapshot atomically; no partial acceptance.', 'warning');
+      const restored = restoreBaseline(record); await render(restored);
+      const proof = await measure(record, 'rollback');
+      record.rollbackCount += 1; record.rollback = { restored, verified: proof.overallPass, result: proof };
+      if (!proof.overallPass) throw new Error('Rollback did not restore all required checks.');
+      event('verifying', 'ROLLBACK COMPLETE · BASELINE RE-VERIFIED', `${proof.passed}/${proof.total} checks passed. All three fixture states restored.`, 'success');
+      record.status = 'waiting_for_human'; publish(record); move('waiting_for_human');
+      event('waiting_for_human', 'Product judgment required', 'Brand changes need approval. Header overflow and broken form semantics must be repaired either way.', 'warning');
+    } catch (error) { await stopSafely(record, error); }
+    finally { gate.current.release(); setRunning(false); }
+  };
+  const resolve = async (choice: PolicyChoice) => {
+    if (currentPhase.current !== 'waiting_for_human' || !tx || !gate.current.tryAcquire()) return;
+    setRunning(true);
+    const record: ChangeTransaction = { ...tx, audits: [...tx.audits], changeSet: { ...tx.changeSet, candidates: [...tx.changeSet.candidates] }, notices: [...tx.notices], humanChoice: choice };
+    try {
+      event('replanning', choice === 'preserve_brand' ? 'Human policy · preserve brand' : 'Human policy · brand exception only', 'Replanning all three files from measured Candidate A feedback.');
+      const feedback = record.changeSet.candidates[0].verification!;
+      const proposal = await decide(record, feedback, choice);
+      record.changeSet.candidates.push(proposal); record.status = 'running'; publish(record);
+      const next = applyOperations(restoreBaseline(record), proposal.operations, choice);
+      move('patching'); await render(next); event('rendering', 'Candidate B · all three files rendered', proposal.summary);
+      await pause(850);
+      const final = await measure(record, 'candidate-b');
+      proposal.verification = final; proposal.status = acceptance(final, choice);
+      setMatrix(final); setMatrixLabel('Candidate B · current rendered result');
+      if (proposal.status === 'rejected') throw new Error('Replan failed a required constraint. Entire change set rejected.');
+      record.status = proposal.status; record.completedAt = new Date().toISOString(); publish(record);
+      setReceipt(createChangeReceipt(record)); move('complete');
+      event('complete', record.status === 'accepted' ? 'CHANGE SET ACCEPTED · VERIFIED' : 'COMPLETED WITH APPROVED EXCEPTION', `${final.passed}/${final.total} measured checks pass. ${record.status === 'accepted' ? 'Every required gate satisfied.' : 'Only PricingCard brand is waived; it remains FAIL.'}`, record.status === 'accepted' ? 'success' : 'warning');
+    } catch (error) { await stopSafely(record, error); }
+    finally { gate.current.release(); setRunning(false); }
+  };
+  const reset = () => {
+    if (gate.current.isLocked()) return;
+    setFixtures(initialFixtures()); move('idle'); setEvents([]); setTx(null); setMatrix(null); setMatrixLabel('Awaiting browser measurements'); setReceipt(null); setRunning(false);
+  };
+  return { fixtures, phase, events, tx, matrix, matrixLabel, receipt, running, start, resolve, reset };
+}

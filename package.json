@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
-    "test": "TSX_TSCONFIG_PATH=tsconfig.app.json node --import tsx --test tests/agent-contract.test.ts"
+    "test": "TSX_TSCONFIG_PATH=tsconfig.app.json node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@paper-design/shaders": "0.0.81",

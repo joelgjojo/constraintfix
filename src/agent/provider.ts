@@ -21,3 +21,8 @@ export const agentProvider: AgentProvider = useCodexLive
   : configuredMode === "replay" ? replayAgent : mockAgent;
 
 export const requestedProvider = useCodexLive ? "OPENAI LIVE · replay fallback" : configuredMode === "replay" ? "OPENAI REPLAY" : "MOCK";
+
+/** Explicit UI selection is locked during a transaction; mock/replay never call fetch. */
+export function providerForMode(mode: AgentMode): AgentProvider {
+  return mode === "live" ? withDemoFallback(codexAgent, replayAgent) : mode === "replay" ? replayAgent : mockAgent;
+}

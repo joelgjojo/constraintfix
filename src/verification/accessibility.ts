@@ -8,7 +8,7 @@ export async function runAxeAudit(root: HTMLElement): Promise<AccessibilityIssue
       type: "rule",
       // The CTA's foreground/background pair is measured independently below.
       // This keeps the axe audit focused on the safe semantic repair in the fixture.
-      values: ["button-name"],
+      values: ["button-name", "label"],
     },
   });
 

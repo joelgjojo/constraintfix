@@ -1,109 +1,100 @@
 # ConstraintFix
 
-ConstraintFix is an **AI Change Firewall for coding agents**, built for **Track 04: Next-Gen Productivity & Automation**. It gives an agent a bounded repair surface, proves the rendered result against a visible contract, rejects unsafe work, rolls the UI back, and creates an exportable receipt.
+**AI Change Firewall for coding agents** — Track 04: Next-Gen Productivity & Automation.
 
-It is intentionally a focused 60–90 second judge demo. The controlled `PricingCard` fixture makes the proof path repeatable; it does not import arbitrary repositories or execute model-written code.
+One request changes three real React fixtures. ConstraintFix applies their structured operations as one transaction, renders them, independently checks the result, rejects and rolls back the entire invalid change set, asks for brand policy, and verifies a replan before generating a receipt. **The LLM never grades itself.**
 
-## Run it
+## Setup
 
-Use Node 20 or later.
+Node 20+:
 
 ```bash
 npm install
 npm run dev
-```
-
-The committed default is `VITE_AGENT_MODE=mock`: it makes **zero** model or network calls.
-
-```bash
 npm test
-npm run typecheck
 npm run build
 npm run preview
 ```
 
-## Judge demo
+React + Vite + TypeScript + Tailwind v4, with reusable shadcn-style controls in `src/components/ui`. The supplied logo, blue/black Ferrofluid background, LiquidMetal Start Repair button, Gradient decision buttons and restrained MagicBento effects remain in the shell. The pricing fixture retains its isolated visual treatment.
 
-1. Start at the visible **Constraint Contract**: WCAG AA with zero violations, protected `#60A5FA`, no horizontal overflow at 375px, and a clear autonomy policy.
-2. Show the broken `PricingCard`: its information icon has no accessible name and the brand-blue CTA has poor white-text contrast.
-3. Press **Start Repair**. ConstraintFix runs axe-core, WCAG contrast math, exact computed-brand equality, and live DOM overflow verification.
-4. The policy-mapped safe repair adds `aria-label="Plan information"`. The semantic violation is fixed, while contrast remains below threshold.
-5. In mock or replay mode, **Candidate A** darkens the CTA to `#2563EB`. Accessibility and 375px layout pass, but the protected brand token fails. The transaction rejects it and visibly rolls back.
-6. At the conflict gate, choose **Preserve Brand**. The decision is limited to the actual product trade-off.
-7. **Candidate B** keeps `#60A5FA` and changes CTA text to `#0F172A`. All deterministic checks pass and receipt **CF-018** appears. Export the JSON proof.
+The UI always starts in **MOCK**, regardless of environment configuration. Select MOCK, REPLAY or LIVE in the header before a run. The selector locks until reset. MOCK and REPLAY require no API key and make zero model requests.
 
-**Allow Change** is a real approved-exception path. It records the protected-token override and never calls it a brand pass.
+## 60–90 second judge flow
 
-Live mode keeps the same judge-proof sequence: OpenAI produces a structured rationale for the policy-bounded contrast candidate, the browser rejects the protected-token change, and a Preserve Brand replan proposes the foreground repair. The model cannot skip the conflict or its deterministic verification.
-
-## What is real
-
-| Contract | Deterministic authority |
+| Time | Action and narrative |
 | --- | --- |
-| WCAG AA, zero violations | axe-core button-name audit plus independent WCAG contrast calculation (minimum 4.5:1) |
-| Protected brand `#60A5FA` | Exact computed-CSS equality against `rgb(96, 165, 250)` |
-| Responsive at 375px | DOM geometry and horizontal-overflow checks inside the live preview |
-| Autonomy | The semantic repair is automatic; protected-token changes and ambiguous trade-offs require a human choice |
+| 0–12s | “An AI coding agent proposes a three-file checkout redesign. This organization has persistent accessibility, brand, mobile and semantic requirements.” Point to the request and contract. |
+| 12–22s | Press **Start Repair**. “We first fix the unnamed info button safely, establish a verified baseline, then apply all three candidate operations as one transaction.” |
+| 22–40s | Show the **6/9 REJECTED** matrix. “The pricing CTA is readable but violates the protected blue. The header actually overflows at 375px. The checkout input loses its accessible label.” Expand browser evidence if useful. |
+| 40–50s | Point to rollback proof: **3 fixtures restored, baseline 9/9**. “Any failed gate rejects the entire change set. This is atomic enforcement.” |
+| 50–65s | Choose **Preserve Brand**. “Product judgment sets the policy; the agent replans all three files using measured feedback.” |
+| 65–80s | Show **9/9 VERIFIED** and receipt. “Two attempts, 18 candidate checks, one rejected candidate, one rollback, one human decision. Exportable evidence explains why this change can land.” Press **Export JSON**. |
+| 80–90s | Reset for the next judge. “Models propose. Deterministic checks decide.” |
 
-The real executor maps only four known actions to fixture stages: add an accessible name, darken CTA, change CTA foreground, or do nothing. The model cannot inject CSS, execute code, mutate files, skip verification, or mark itself successful. `src/verification` is always the acceptance authority.
+Automatic transitions take seconds; narration and the human gate set the demo pace. There is no forced minute-long wait.
 
-`RepairTransaction` and `ConstraintReceipt` record the initial audit, candidates, actual verifier snapshots, rollback, human choice, source trail, model-call count, timing, and final `3/3` constraint result.
+**Allow Change:** after the same rejection and rollback, permit only the pricing brand exception. Candidate B still fixes header overflow and form semantics. The final result is **8/9, approved exception**, with brand still FAIL. It never masquerades as a fully verified 9/9 result.
 
-## Agent architecture
+## Real browser proof
+
+Each fixture renders inside a true 375px-wide verification surface, even on a narrow device (the preview wrapper can scroll independently).
+
+| Fixture | Candidate A — actual browser behavior | Preserve Brand candidate B |
+| --- | --- | --- |
+| PricingCard.tsx | Computed CTA background `#2563EB`; white-text contrast ≈5.17:1 passes, protected `#60A5FA` fails; no overflow | `#60A5FA` + `#0F172A`, ≈7.02:1, brand and layout pass |
+| MobileHeader.tsx | Expanded navigation measures 540px within 375px; layout fails | Secondary navigation collapses; scroll width375, layout passes |
+| CheckoutForm.tsx | A visible label is detached from its input; axe `label` violation | Correct `htmlFor`/`id` association; zero selected-rule violations |
+
+Before Candidate A, an automatic aria-label repair establishes an all-pass baseline. This baseline uses readable dark CTA text so rollback returns to an actually valid state. Candidate A deliberately proposes a different readable color treatment; it does not improve contrast over that baseline.
+
+The 3×3 matrix groups semantics under Accessibility: axe `button-name` and `label`, plus independent CTA contrast math (≥4.5:1); exact computed brand equality on each CTA; and real DOM geometry/scroll measurements. Four policy areas therefore produce nine displayed gates, without double-counting semantics.
+
+## Architecture
 
 ```text
-AgentProvider: MOCK | OPENAI LIVE | OPENAI REPLAY
-                  ↓ validated structured candidate
-Bounded fixture executor
-                  ↓ browser render
-axe-core · contrast math · token equality · DOM layout
-                  ↓
-accept · reject + rollback · request human choice
-                  ↓
-constraint receipt
+AgentProvider (MOCK / REPLAY / LIVE)
+  → validated structured operations for three fixtures
+  → deterministic executor, one React state commit
+  → actual browser render
+  → axe + contrast math + computed token + DOM geometry
+  → whole-change-set acceptance OR rejection + snapshot rollback
+  → baseline re-verification → human policy → multi-file replan
+  → verification → receipt v2
 ```
 
-`src/agent/types.ts` is the stable provider boundary. `src/agent/candidate-schema.ts` validates every structured candidate at runtime. `src/agent/provider.ts` chooses the mode, and `src/agent/fallback-agent.ts` sends a failed live request to replay.
+- `src/transactions/change-set.ts`: explicit ChangeSet, operations, transaction, acceptance policy, rollback and receipt aggregation.
+- `src/transactions/use-change-transaction.ts`: phase flow, operation locks, atomic render, audits, recovery, human decisions and reset.
+- `src/fixtures`: PricingCard, MobileHeader and CheckoutForm; local preview actions never navigate or charge.
+- `src/verification/change-set.ts`: serial axe audits and measured per-fixture results. Providers cannot set PASS/FAIL.
+- `src/components/verification-matrix.tsx`: results and inspectable browser evidence.
+- `src/components/change-set-report.tsx`: honest operation descriptions, trace and downloadable receipt.
+- `src/agent/types.ts`: AgentProvider boundary; legacy single-fixture modules remain for compatibility.
 
-`api/codex/decision.js` is a Vercel Node function backed by the official OpenAI Responses API. It accepts only the two policy-approved planning stages, requests a strict JSON schema, enforces the expected mapped action, and returns no secret, prompt, or raw model output. It is stateless by design, so a deployment does not depend on a serverless function retaining memory between the candidate and replan requests. `server/codex-proxy.ts` mounts that same handler for local Vite development.
+Only allowlisted fixture/action combinations can execute. A malformed, partial, duplicated or out-of-policy operation set is rejected before any fixture changes. Reset clears candidates, receipt, matrix, events, user input and preview feedback. Synchronous operation locks block overlapping work. Unexpected render/audit/provider failures recover to the saved baseline when available and cannot produce an accepted receipt.
 
-Reusable shell controls stay in `src/components/ui`. The header uses the supplied ConstraintFix logo; `LiquidMetalButton` is the primary Start Repair CTA; `GradientButton` handles the human decision; and `MagicBento` gives the otherwise static Contract and Agent Control panels bounded hover effects. The OGL Ferrofluid background uses `#000000`, `#080445`, and `#003cff`. The deliberately broken fixture remains isolated in `src/fixtures/pricing-card.tsx`; the bento wrapper never encloses it.
+Receipt schema v2 includes transaction/change-set IDs, request, source, files, candidate operations and measured outcomes, all five audits, restored state/proof, human policy, exceptions, final outcome and evaluation. A normal run has **2 attempts, 3 files, 18 candidate checks, 45 total measured checks** (including initial, baseline and rollback audits), 1 rejection, 1 rollback and 1 human decision.
 
-## Modes and local live setup
+## OpenAI and deployment
 
-Set one mode in `.env.local`, then restart the development server.
-
-```dotenv
-# default: deterministic, zero model/network calls
-VITE_AGENT_MODE=mock
-
-# replay: zero model/network calls; reuses a validated live candidate captured
-# in this browser session when one exists, otherwise uses the audited demo fixture
-VITE_AGENT_MODE=replay
-
-# live: calls the server-only OpenAI Responses API after Start Repair
-VITE_AGENT_MODE=live
-
-# required for live mode; do not prefix with VITE_.
-OPENAI_API_KEY=
-
-# optional; defaults to gpt-5-mini
-OPENAI_MODEL=gpt-5-mini
-```
-
-Live requests are not retried automatically. A timeout, missing authentication, invalid schema, rate limit, or unavailable API results in the visible **OPENAI REPLAY** fallback. The fallback is deterministic and the verifier still runs normally. A successful live candidate is captured in `sessionStorage` only after client validation; replay never makes a network request.
-
-## Deploy to Vercel
-
-Vercel detects the Vite app and the `api/codex/decision.js` server function automatically. Import this repository, keep the repository root as the project root, and add these environment variables in **Project Settings → Environment Variables** for Production and Preview:
+`api/codex/decision.js` is a standalone Vercel Node function using the OpenAI Responses API. `server/codex-proxy.ts` mounts the same handler in Vite development. Set server-only variables in `.env.local` or Vercel Project Settings → Environment Variables:
 
 ```dotenv
-VITE_AGENT_MODE=live
 OPENAI_API_KEY=your_server_only_key
 # optional
 OPENAI_MODEL=gpt-5-mini
 ```
 
-Do not create a `VITE_OPENAI_API_KEY` variable: any variable with that prefix is included in the browser bundle. Deploy after the variables are saved. The browser header will show **OPENAI LIVE · replay fallback**. If the function is unavailable, the UI stays demo-safe by visibly switching to **OPENAI REPLAY** while deterministic verification continues.
+Never prefix a secret with `VITE_`. Vercel uses the Vite build output plus the API function. Redeploy after changing environment variables. `npm run preview` tests static production output; local live calls require `npm run dev` or the deployed Vercel function.
 
-The [OpenAI JavaScript quickstart](https://platform.openai.com/docs/quickstart/make-your-first-api-request) documents the server-side `OPENAI_API_KEY` convention. ConstraintFix calls the Responses API from its server function with `store: false`, minimal reasoning, strict JSON-schema output, a 25-second timeout, and no automatic retry. The API schema uses the Structured Outputs-compatible subset; the browser applies the full candidate validator before execution. The API key is read only by the server function; it is never sent to the browser.
+Select **LIVE · uses API credits** explicitly before Start Repair. Live requests carry the real per-fixture feedback and human policy, request strict structured output and validate all three operations both at the boundary and executor. No arbitrary model-written code runs. The model can explain and propose only within the controlled scenario's stage-specific allowlist. Calls use `store:false`, a 25-second timeout and no automatic retry.
+
+Failed live planning switches visibly to REPLAY, while deterministic verification still runs. The multi-file REPLAY mode uses the bundled audited proposal and replan; legacy single-fixture replay also supports a validated session-captured response. These are offline demo decisions, not claims of fresh live model reasoning.
+
+**This upgrade was tested without paid model calls.** The multi-file live schema and local validation are implemented; a real three-file LIVE end-to-end run remains intentionally untested. MOCK and REPLAY are the judge-ready paths.
+
+## Scope and validation
+
+This is a controlled browser-rendered MVP. Rollback restores React fixture state, not git commits. Verification covers selected axe rules, action-surface contrast/token equality and 375px overflow; it is not full WCAG compliance, arbitrary repository analysis, a real PR integration or universal frontend safety.
+
+`npm test` covers existing contracts plus multi-fixture operation validation, every atomic rejection gate, rollback isolation, receipt aggregation, the restricted exception path and network-free MOCK/REPLAY. Browser repeatability and production-preview findings are recorded in `docs/upgrade-validation.md`.

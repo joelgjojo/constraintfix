@@ -1,3 +1,4 @@
+import type { Operation, VerificationMatrix } from "@/transactions/change-set";
 export type AgentPhase =
   | "idle"
   | "auditing"
@@ -69,6 +70,7 @@ export interface RepairDecision {
   candidate?: StructuredRepairCandidate;
   modelCalls?: number;
   usedThread?: boolean;
+  operations?: Operation[];
 }
 
 export interface AgentDecisionInput {
@@ -77,6 +79,7 @@ export interface AgentDecisionInput {
   verification: VerificationResult | null;
   humanChoice?: "preserve_brand" | "allow_change";
   transactionId?: string;
+  changeSet?: { request: string; feedback?: VerificationMatrix };
 }
 
 export interface AgentProvider {

@@ -1,6 +1,7 @@
+import { operationsFor } from "@/transactions/change-set";
 import type { AgentProvider, RepairDecision, StructuredRepairCandidate } from "@/agent/types";
 
-const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const rejectionCandidate: StructuredRepairCandidate = {
   action: "darken_cta",
@@ -24,9 +25,16 @@ export const preserveBrandCandidate: StructuredRepairCandidate = {
 
 export const mockAgent: AgentProvider = {
   label: "Mock decision layer",
-  async decide({ stage, verification, humanChoice }): Promise<RepairDecision> {
+  async decide({ stage, verification, humanChoice, changeSet }): Promise<RepairDecision> {
     await sleep(520);
 
+    if (changeSet) {
+      const operations = operationsFor(humanChoice);
+      const candidate = humanChoice === "preserve_brand" ? preserveBrandCandidate : rejectionCandidate;
+      return { type: humanChoice ? "replan" : "apply_patch", action: candidate.action, candidate, operations,
+        reason: humanChoice ? "Repair the header overflow and restore the form label; honor the recorded brand policy across all three files." : "Propose a darker pricing CTA, expanded navigation and a compact checkout field as one atomic change set.",
+        risk: candidate.risk, source: "mock" };
+    }
     if (humanChoice === "preserve_brand") {
       return {
         type: "replan",

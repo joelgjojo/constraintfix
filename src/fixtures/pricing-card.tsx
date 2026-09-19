@@ -3,12 +3,13 @@ import { forwardRef } from "react";
 
 interface PricingCardProps {
   stage: number;
+  readableBaseline?: boolean;
   ctaRef: React.Ref<HTMLButtonElement>;
   onPreviewAction: (message: string) => void;
 }
 
 export const PricingCard = forwardRef<HTMLDivElement, PricingCardProps>(
-  ({ stage, ctaRef, onPreviewAction }, ref) => {
+  ({ stage, ctaRef, onPreviewAction, readableBaseline = false }, ref) => {
     const hasAccessibleName = stage >= 1;
 
     const ctaStyle =
@@ -16,7 +17,7 @@ export const PricingCard = forwardRef<HTMLDivElement, PricingCardProps>(
         ? { backgroundColor: "#2563EB", color: "#FFFFFF" }
         : stage >= 3
           ? { backgroundColor: "#60A5FA", color: "#0F172A" }
-          : { backgroundColor: "#60A5FA", color: "#FFFFFF" };
+          : { backgroundColor: "#60A5FA", color: readableBaseline ? "#0F172A" : "#FFFFFF" };
 
     return (
       <div ref={ref} className={`pricing-card pricing-card--stage-${stage} w-full max-w-[340px] rounded-[24px] border border-white/10 bg-[#101419] p-6 shadow-2xl shadow-black/40`}>
@@ -65,6 +66,7 @@ export const PricingCard = forwardRef<HTMLDivElement, PricingCardProps>(
 
         <button
           ref={ctaRef}
+          data-contract-cta
           type="button"
           style={ctaStyle}
           onClick={() => onPreviewAction("Get Pro acknowledged locally — this inspected fixture never navigates or checks out.")}

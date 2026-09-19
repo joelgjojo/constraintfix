@@ -28,7 +28,7 @@ export const replayAgent: AgentProvider = {
   label: "OPENAI REPLAY · verified response",
   async decide(input: AgentDecisionInput): Promise<RepairDecision> {
     const decision = await mockAgent.decide(input);
-    const recorded = input.stage === 1 ? storedCandidate() : null;
+    const recorded = !input.changeSet && input.stage === 1 ? storedCandidate() : null;
     const candidate = recorded ?? decision.candidate ?? (input.humanChoice === "preserve_brand" ? preserveBrandCandidate : rejectionCandidate);
     const action = input.stage === 1 && candidate ? candidate.action : decision.action;
 
