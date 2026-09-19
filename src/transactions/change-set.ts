@@ -141,4 +141,4 @@ export function createChangeReceipt(tx: ChangeTransaction) {
   };
 }
 export type ChangeReceipt = ReturnType<typeof createChangeReceipt>;
-export const sourceLabel = (source: DecisionSource) => source === 'codex_live' ? 'OpenAI live' : source === 'codex_replay' ? 'Replay' : 'Mock';
+export const sourceLabel = (source: DecisionSource) => source === 'openai_live' ? 'Optional live connector' : source === 'bundled_replay' ? 'Bundled replay' : 'Mock';

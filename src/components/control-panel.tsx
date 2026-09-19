@@ -32,7 +32,7 @@ export function ControlPanel({ phase, running, brandOverride = false, onStart, o
                 {completedWithException ? "Repair completed with exception" : complete ? "Verified repair complete" : waiting ? "Agent paused for judgment" : running ? "ConstraintFix is working" : "Ready to inspect the interface"}
               </h2>
               <p className="mt-0.5 text-[11px] text-zinc-600">
-                {completedWithException ? "Accessibility and layout passed; the protected brand token remains a human-approved exception." : complete ? "All required constraints passed deterministic verification." : waiting ? "Autonomy stops where product judgment begins." : "Mock, replay, or server-only OpenAI can propose; execution and proof stay deterministic."}
+                {completedWithException ? "Accessibility and layout passed; the protected brand token remains a human-approved exception." : complete ? "All required constraints passed deterministic verification." : waiting ? "Autonomy stops where product judgment begins." : "Bundled replay is judge-safe; the optional live connector never controls verification."}
               </p>
               <LatticeLoader status={loaderStatus} label={loaderLabel} className="mt-2" />
             </div>

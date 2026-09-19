@@ -61,11 +61,11 @@ export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: Agen
   const start = async () => {
     if (currentPhase.current !== 'idle' || !gate.current.tryAcquire()) return;
     setRunning(true);
-    const record = newTransaction(mode === 'live' ? 'codex_live' : mode === 'replay' ? 'codex_replay' : 'mock');
+    const record = newTransaction(mode === 'live' ? 'openai_live' : mode === 'replay' ? 'bundled_replay' : 'mock');
     setEvents([]); setReceipt(null); setMatrix(null); publish(record);
     try {
       await render(initialFixtures()); move('auditing');
-      event('auditing', 'Transaction started · three files', 'Inspecting the original rendered checkout experience.');
+      event('auditing', 'GOAL · three-file change request', 'Improve pricing and checkout while preserving accessibility, brand and mobile behavior.');
       const original = await measure(record, 'initial'); setMatrix(original); setMatrixLabel('Original render');
       event('auditing', 'Safe semantic repair · AUTO', 'The pricing info button lacks a name. Add aria-label before establishing the transaction baseline.');
       const baseline = { ...initialFixtures(), pricing: 1 };
@@ -76,16 +76,21 @@ export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: Agen
       event('verifying', 'Verified baseline · 9/9', 'Accessible names, protected surfaces and all 375px containers verified.', 'success');
       const proposal = await decide(record, baselineResult);
       record.changeSet.candidates.push(proposal); publish(record);
-      event('planning', `${sourceLabel(proposal.source)} · three-file proposal`, proposal.summary);
+      event('planning', `AGENT PROPOSAL · ${sourceLabel(proposal.source)}`, proposal.summary);
       move('patching'); const next = applyOperations(baseline, proposal.operations);
-      await render(next); event('rendering', 'Applied as one transaction', 'PricingCard.tsx + MobileHeader.tsx + CheckoutForm.tsx');
+      await render(next); event('rendering', 'EXECUTE · rendered one atomic change set', 'PricingCard.tsx + MobileHeader.tsx + CheckoutForm.tsx');
       await pause(900);
       const result = await measure(record, 'candidate-a');
       proposal.verification = result; proposal.status = acceptance(result);
       setMatrix(result); setMatrixLabel('Candidate A · measured before rollback');
       if (proposal.status !== 'rejected') throw new Error('This controlled proposal did not exhibit the expected regressions; inspect the fixtures.');
       record.status = 'rejected'; publish(record); move('conflict');
-      event('conflict', 'CHANGE SET REJECTED', failureList(result).join(' · '), 'danger');
+      const pricing = result.fixtures.find(item => item.fixture === 'pricing-card')!;
+      const header = result.fixtures.find(item => item.fixture === 'mobile-header')!;
+      const form = result.fixtures.find(item => item.fixture === 'checkout-form')!;
+      const formIssue = form.axeViolations[0];
+      event('verifying', `ENVIRONMENTAL OBSERVATION · ${result.passed}/${result.total}`, `Pricing contrast ${pricing.contrastRatio.toFixed(2)}:1; brand ${pricing.brandColor}. Header ${header.scrollWidth}px > ${header.width}px. Form axe ${formIssue?.id ?? 'none'} · ${formIssue?.impact ?? 'none'} · ${formIssue?.nodes ?? 0} node.`, 'warning');
+      event('conflict', 'DETERMINISTIC FAILURE · CHANGE SET REJECTED', failureList(result).join(' · '), 'danger');
       await pause(1600);
       event('replanning', 'ROLLING BACK 3-FILE CHANGE SET', 'Restoring one verified snapshot atomically; no partial acceptance.', 'warning');
       const restored = restoreBaseline(record); await render(restored);
@@ -94,7 +99,7 @@ export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: Agen
       if (!proof.overallPass) throw new Error('Rollback did not restore all required checks.');
       event('verifying', 'ROLLBACK COMPLETE · BASELINE RE-VERIFIED', `${proof.passed}/${proof.total} checks passed. All three fixture states restored.`, 'success');
       record.status = 'waiting_for_human'; publish(record); move('waiting_for_human');
-      event('waiting_for_human', 'Product judgment required', 'Brand changes need approval. Header overflow and broken form semantics must be repaired either way.', 'warning');
+      event('waiting_for_human', 'VERIFIER FEEDBACK · HUMAN POLICY REQUIRED', 'Brand changes need approval. Header overflow and broken form semantics must be repaired either way.', 'warning');
     } catch (error) { await stopSafely(record, error); }
     finally { gate.current.release(); setRunning(false); }
   };

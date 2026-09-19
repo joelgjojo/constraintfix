@@ -2,7 +2,7 @@
 
 ## Architecture and files
 
-The default application now runs a three-fixture ChangeSet through a transaction hook. Existing AgentProvider, fallback, operation gate, UI controls and legacy transaction tests are retained. Operations are validated as one set before a single React state commit. Browser checks determine acceptance; a failed candidate restores the saved valid snapshot for all three fixtures and re-verifies it before the policy gate.
+The default application runs a three-fixture ChangeSet through a transaction hook. AgentProvider, fallback, operation gate and UI controls are retained. Operations are validated as one set before a single React state commit. Browser checks determine acceptance; a failed candidate restores the saved valid snapshot for all three fixtures and re-verifies it before the policy gate.
 
 Added: `src/transactions/change-set.ts`, `use-change-transaction.ts`; `src/fixtures/mobile-header.tsx`, `checkout-form.tsx`; `src/verification/change-set.ts`; `src/components/change-set-preview.tsx`, `verification-matrix.tsx`, `change-set-report.tsx`; `tests/change-set.test.ts`.
 
@@ -29,18 +29,24 @@ Reset between runs; run2 reloaded the latest production build after copy edits. 
 | CF-50bd698c | MOCK | Preserve Brand | 9/9 accepted |
 | CF-ee8fc1db | MOCK | Preserve Brand | 9/9 accepted |
 | CF-32a676e5 | MOCK | Preserve Brand | 9/9 accepted |
-| CF-612f4717 | REPLAY | Preserve Brand | 9/9 accepted |
-| CF-bc8f5aab | REPLAY | Preserve Brand | 9/9 accepted |
-| CF-ce544778 | REPLAY | Allow Change | 8/9 approved exception |
+| CF-612f4717 | BUNDLED REPLAY | Preserve Brand | 9/9 accepted |
+| CF-bc8f5aab | BUNDLED REPLAY | Preserve Brand | 9/9 accepted |
+| CF-ce544778 | BUNDLED REPLAY | Allow Change | 8/9 approved exception |
 | CF-b3bf855d | MOCK | Allow Change | 8/9 approved exception |
 
 No duplicate receipt was present. Reset returned the application to idle, removed prior evidence/receipt, restored the unnamed pricing info button and original fixtures. Input and local feedback reset were checked separately. Start/Reset/mode locks were observed during work. Restart demo at the policy gate was checked separately. Export JSON activated and changed to JSON exported. Fixture actions remain local acknowledgements; no payment or navigation.
 
-Zero browser warning/error logs were captured. MOCK/REPLAY provider tests replaced fetch with a throwing counter and confirmed zero requests across proposal and both policies. No paid model requests were made during this upgrade.
+Zero browser warning/error logs were captured. MOCK/BUNDLED REPLAY provider tests replaced fetch with a throwing counter and confirmed zero requests across proposal and both policies. No paid model requests were made during this upgrade.
+
+## Final submission hardening
+
+The default runtime label is now **BUNDLED REPLAY · offline**. The UI and exported receipt use `Bundled replay`; they do not claim the bundled proposal came from OpenAI. The optional live connector is explicitly labeled and remains outside the guaranteed path. The first screen states **3 files**, **9 measured gates** and **atomic transaction**. Candidate evidence is visible below the matrix, and receipt v2 now summarizes both candidates, failure categories, rollback proof, human policy and final outcome in one screenshot-ready row.
+
+Unused CF-018/single-fixture UI and transaction modules were removed after dependency checks. The current repository has one primary architecture under `src/agent`, `src/transactions`, `src/verification`, `src/fixtures` and `tests`.
 
 ## Tests and production
 
-- 17 tests passed (11 existing + 6 focused multi-file tests).
+- 14 focused tests passed across provider/runtime contracts and multi-file transaction behavior.
 - Every one of nine failed gates independently rejects the whole change set; invalid/missing/duplicate operations reject before mutation.
 - Rollback snapshot isolation, complete fixture aggregation, receipt accounting, restricted brand exception, offline provider output and server/client operation parity pass.
 - Existing operation-lock and reset tests pass; new multi-file reset/locks also verified through browser interactions.
@@ -50,9 +56,9 @@ Zero browser warning/error logs were captured. MOCK/REPLAY provider tests replac
 
 ## Limitations and demo
 
-LIVE is optional and implemented with strict multi-file structured output, but **not live-tested in this upgrade**, as requested to avoid credits. The scenario is intentionally bounded to allowlisted operations, including a planned unsafe first candidate. REPLAY uses the audited bundled multi-file proposal; it is not fresh model reasoning. No arbitrary repo, actual source mutation/git rollback, CI integration or full WCAG claim.
+The live connector is optional and implemented with strict multi-file structured output, but **not live-tested in this upgrade**, as requested to avoid credits. The scenario is intentionally bounded to allowlisted operations, including a planned unsafe first candidate. BUNDLED REPLAY uses the audited offline multi-file proposal; it is not fresh model reasoning. No arbitrary repo, actual source mutation/git rollback, CI integration or full WCAG claim.
 
-The model-call count reflects returned provider metadata; failed live requests may have unknown upstream usage. Use MOCK/REPLAY for a guaranteed zero-cost demonstration.
+The model-call count reflects returned provider metadata; failed live requests may have unknown upstream usage. Use BUNDLED REPLAY for the guaranteed zero-cost demonstration.
 
 See README for the exact 0–90-second judge script. Actual automatic work finishes in seconds; the policy gate allows narration. Recorded elapsed times include time spent inspecting the page and therefore are not performance benchmarks.
 

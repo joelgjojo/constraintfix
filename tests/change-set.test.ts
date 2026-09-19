@@ -60,7 +60,7 @@ test('receipt aggregates actual audits, candidates, rollback and explicit except
   }
   assert.throws(()=>createChangeReceipt(newTransaction('mock')));
 });
-test('MOCK and REPLAY produce validated multi-file proposals without fetching', async () => {
+test('MOCK and BUNDLED REPLAY produce validated multi-file proposals without fetching', async () => {
   const previous=globalThis.fetch;let calls=0;
   globalThis.fetch=async()=>{calls++;throw new Error('Offline mode must never fetch');};
   try {for(const provider of [mockAgent,replayAgent]) for(const choice of [undefined,'preserve_brand','allow_change'] as const){

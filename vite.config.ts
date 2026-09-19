@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => {
   const environment = loadEnv(mode, process.cwd(), "");
   const agentMode = (process.env.VITE_AGENT_MODE ?? environment.VITE_AGENT_MODE ?? environment.VITE_AGENT_PROVIDER ?? "mock").toLowerCase();
   const liveDecisionMode = agentMode === "live";
+  const buildSha = process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? "local";
 
   return {
     plugins: [
@@ -19,6 +20,9 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": new URL("./src", import.meta.url).pathname,
       },
+    },
+    define: {
+      __BUILD_SHA__: JSON.stringify(buildSha.slice(0, 7)),
     },
   };
 });

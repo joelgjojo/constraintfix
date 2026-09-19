@@ -15,7 +15,7 @@ export type AgentPhase =
 export type ConstraintStatus = "pending" | "pass" | "fail";
 export type RiskLevel = "low" | "medium" | "high";
 export type AgentMode = "mock" | "live" | "replay";
-export type DecisionSource = "mock" | "codex_live" | "codex_replay" | "demo_fallback";
+export type DecisionSource = "mock" | "openai_live" | "bundled_replay" | "demo_fallback";
 export type RepairAction = "add_accessible_name" | "darken_cta" | "change_text_color" | "none";
 export type RepairDecisionType = "apply_patch" | "request_human" | "replan" | "complete";
 
