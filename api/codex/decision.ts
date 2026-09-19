@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { codexCandidateSchema, isStructuredRepairCandidate } from "../../src/agent/candidate-schema";
+import { isStructuredRepairCandidate, openaiCandidateSchema } from "../../src/agent/candidate-schema";
 import type { StructuredRepairCandidate } from "../../src/agent/types";
 
 type LiveStage = 1 | 2;
@@ -132,7 +132,7 @@ export default async function handler(request: IncomingMessage, response: Server
           type: "json_schema",
           name: "constraintfix_repair_candidate",
           strict: true,
-          schema: codexCandidateSchema,
+          schema: openaiCandidateSchema,
         },
       },
     });

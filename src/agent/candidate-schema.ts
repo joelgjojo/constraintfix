@@ -23,6 +23,26 @@ export const codexCandidateSchema = {
   },
 } as const;
 
+/**
+ * OpenAI Structured Outputs accepts a deliberately smaller JSON Schema subset.
+ * The browser still applies `isStructuredRepairCandidate` below, including all
+ * length and numeric bounds, before a proposal can reach the executor.
+ */
+export const openaiCandidateSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["action", "proposedChange", "expectedEffect", "risk", "confidence", "rationale", "constraints"],
+  properties: {
+    action: { type: "string", enum: ["darken_cta", "change_text_color"] },
+    proposedChange: { type: "string" },
+    expectedEffect: { type: "string" },
+    risk: { type: "string", enum: ["low", "medium", "high"] },
+    confidence: { type: "number" },
+    rationale: { type: "string" },
+    constraints: { type: "array", items: { type: "string" } },
+  },
+} as const;
+
 function isShortString(value: unknown, maximum: number) {
   return typeof value === "string" && value.trim().length > 0 && value.length <= maximum;
 }
