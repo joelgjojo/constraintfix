@@ -101,6 +101,19 @@ function isAllowedCandidate(candidate, stage) {
   return isStructuredRepairCandidate(candidate) && candidate.action === expectedAction(stage);
 }
 
+function invalidCandidateFields(candidate, stage) {
+  if (!candidate || typeof candidate !== "object") return ["candidate"];
+  const fields = [];
+  if (candidate.action !== expectedAction(stage)) fields.push("action");
+  if (!isShortString(candidate.proposedChange, 180)) fields.push("proposedChange");
+  if (!isShortString(candidate.expectedEffect, 180)) fields.push("expectedEffect");
+  if (!["low", "medium", "high"].includes(candidate.risk)) fields.push("risk");
+  if (typeof candidate.confidence !== "number" || !Number.isFinite(candidate.confidence) || candidate.confidence < 0 || candidate.confidence > 1) fields.push("confidence");
+  if (!isShortString(candidate.rationale, 280)) fields.push("rationale");
+  if (!Array.isArray(candidate.constraints) || candidate.constraints.length === 0 || candidate.constraints.length > 4 || !candidate.constraints.every((constraint) => isShortString(constraint, 80))) fields.push("constraints");
+  return fields;
+}
+
 function outputText(body) {
   if (typeof body.output_text === "string" && body.output_text.trim()) return body.output_text;
   for (const item of body.output ?? []) {
@@ -186,7 +199,7 @@ export default async function handler(request, response) {
 
     const candidate = await requestCandidate(payload);
     if (!isAllowedCandidate(candidate, payload.stage)) {
-      writeJson(response, 422, { error: "Live planning returned an invalid repair candidate." });
+      writeJson(response, 422, { error: "Live planning returned an invalid repair candidate.", invalidFields: invalidCandidateFields(candidate, payload.stage) });
       return;
     }
 
@@ -203,4 +216,4 @@ export default async function handler(request, response) {
   }
 }
 
-export const __testables = { expectedAction, isAllowedCandidate, isLiveInput, outputText, planningPrompt };
+export const __testables = { expectedAction, invalidCandidateFields, isAllowedCandidate, isLiveInput, outputText, planningPrompt };
