@@ -3,7 +3,7 @@ import type { AgentProvider, RepairDecision } from "@/agent/types";
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 export const mockAgent: AgentProvider = {
-  label: "Demo fallback",
+  label: "Mock decision layer",
   async decide({ stage, verification, humanChoice }): Promise<RepairDecision> {
     await sleep(520);
 

@@ -19,8 +19,9 @@ export function AgentSignal({ phase, provider }: AgentSignalProps) {
   const working = workingPhases.includes(phase);
   const settled = phase === "complete";
   const failed = phase === "failed";
+  const paused = phase === "conflict" || phase === "waiting_for_human";
   const status = settled ? "done" : failed ? "error" : working ? "working" : "idle";
-  const label = settled ? "Verification proof settled" : failed ? "Execution needs review" : working ? "Reasoning against constraints" : "Ready to inspect a live render";
+  const label = settled ? "Verification proof settled" : failed ? "Execution needs review" : paused ? "Awaiting product choice" : working ? "Running bounded operation" : "Ready to inspect a live render";
 
   return (
     <BorderGlow className="agent-signal" glowColor="96, 165, 250" animated>
@@ -37,8 +38,8 @@ export function AgentSignal({ phase, provider }: AgentSignalProps) {
           </div>
 
           <div className="mt-5 max-w-[235px]">
-            <ScrambledText className="agent-signal__headline">Constraint-aware repair</ScrambledText>
-            <p className="mt-1.5 text-[11px] leading-5 text-sky-100/55">A visible reasoning surface that stays connected to deterministic proof.</p>
+            <ScrambledText className="agent-signal__headline">Verify before trust</ScrambledText>
+            <p className="mt-1.5 text-[11px] leading-5 text-sky-100/55">A bounded agent operation connected to deterministic proof.</p>
           </div>
 
           <LatticeLoader status={status} label={label} className="mt-5" />

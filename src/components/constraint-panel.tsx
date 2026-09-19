@@ -1,6 +1,7 @@
 import { Check, ShieldCheck, TriangleAlert, Waves } from "lucide-react";
 import type { VerificationResult } from "@/agent/types";
 import { cn } from "@/lib/utils";
+import { constraintContract } from "@/transactions/contract";
 
 interface ConstraintPanelProps {
   result: VerificationResult | null;
@@ -46,7 +47,7 @@ export function ConstraintPanel({ result, brandOverride = false }: ConstraintPan
             <div>
               <div className="text-xs font-medium text-zinc-200">Accessibility</div>
               <div className="mt-1 text-[11px] text-zinc-600">
-                axe-core + WCAG AA contrast ≥ 4.5:1
+                {constraintContract.accessibility.standard} · {constraintContract.accessibility.maximumViolations} violations · contrast ≥ {constraintContract.accessibility.minimumContrastRatio}:1
                 {result && <span className="ml-2 text-zinc-500">({result.contrastRatio.toFixed(2)}:1)</span>}
               </div>
             </div>
@@ -60,7 +61,7 @@ export function ConstraintPanel({ result, brandOverride = false }: ConstraintPan
             <div>
               <div className="text-xs font-medium text-zinc-200">Protected brand token</div>
               <div className="mt-1 flex items-center gap-2 text-[11px] text-zinc-600">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#60A5FA] ring-1 ring-white/10" /> #60A5FA must remain unchanged
+                <span className="h-2.5 w-2.5 rounded-full bg-[#60A5FA] ring-1 ring-white/10" /> {constraintContract.brand.protectedToken} is protected
               </div>
             </div>
           </div>
@@ -72,10 +73,21 @@ export function ConstraintPanel({ result, brandOverride = false }: ConstraintPan
             <span className="constraint-icon"><TriangleAlert size={14} /></span>
             <div>
               <div className="text-xs font-medium text-zinc-200">Responsive layout</div>
-              <div className="mt-1 text-[11px] text-zinc-600">No horizontal overflow at the 375px demo viewport</div>
+              <div className="mt-1 text-[11px] text-zinc-600">{constraintContract.responsive.viewport}px · no horizontal overflow</div>
             </div>
           </div>
           <Status state={layoutState} text={!result ? "WAITING" : result.layoutPass ? "PASS" : "FAIL"} />
+        </div>
+
+        <div className="flex items-center justify-between gap-4 py-4">
+          <div className="flex items-start gap-3">
+            <span className="constraint-icon"><ShieldCheck size={14} /></span>
+            <div>
+              <div className="text-xs font-medium text-zinc-200">Autonomy policy</div>
+              <div className="mt-1 text-[11px] text-zinc-600">Low risk: auto · protected or ambiguous: ask</div>
+            </div>
+          </div>
+          <Status state="pass" text="ENFORCED" />
         </div>
       </div>
     </section>

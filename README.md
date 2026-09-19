@@ -1,8 +1,10 @@
 # ConstraintFix
 
-ConstraintFix is a judge-ready **Track 04: Next-Gen Productivity & Automation** demo. It shows a frontend-repair agent that can make a safe fix, verify a rendered result, stop at a real product conflict, ask for the one human decision that matters, replan, and prove the final interface.
+ConstraintFix is an **AI Change Firewall for coding agents**, built for **Track 04: Next-Gen Productivity & Automation**. Coding agents can propose a frontend change; ConstraintFix renders it in a controlled browser surface, verifies a visible contract, rejects unsafe work, rolls back automatically, and produces an exportable receipt before anyone has to trust it.
 
-## Run the demo
+The app is a focused 60–90 second demo, not a general-purpose code import tool. Its controlled `PricingCard` fixture makes the entire proof path repeatable.
+
+## Run it
 
 Use Node 20 or later.
 
@@ -11,7 +13,7 @@ npm install
 npm run dev
 ```
 
-Open the local URL Vite prints. The default configuration uses the deterministic demo reasoner, which is the recommended mode for judging.
+The default `VITE_AGENT_MODE=mock` makes no network requests and spends no API credits.
 
 ```bash
 npm run typecheck
@@ -19,63 +21,67 @@ npm run build
 npm run preview
 ```
 
-`npm run preview` verifies the production bundle. It also preserves the demo because the mock reasoner is built into the app by default.
+## Judge demo sequence
 
-## Judge sequence (60–90 seconds)
+1. Start with the visible **Constraint Contract**: WCAG AA with zero violations, protected `#60A5FA`, no horizontal overflow at 375px, and a clear autonomy policy.
+2. Point to the broken `PricingCard`: its information icon has no accessible name and the brand-blue CTA has insufficient white-text contrast.
+3. Press **Start Repair**. ConstraintFix runs axe-core, WCAG contrast math, exact brand-token equality, and DOM overflow verification against the rendered card.
+4. The agent autonomously applies the low-risk `aria-label="Plan information"` repair. Verification proves the semantic issue is fixed, but contrast still fails.
+5. **Candidate A** darkens the CTA to `#2563EB`. Accessibility and 375px layout pass, but the protected brand token fails. The transaction is visibly rejected and the UI automatically rolls back to the last valid render.
+6. At the **Constraint Conflict** gate, choose **Preserve Brand**. The human choice is limited to the actual trade-off.
+7. **Candidate B** keeps `#60A5FA` and changes CTA text to `#0F172A`. All deterministic checks pass, the transaction is accepted, and receipt **CF-018** appears. Use **Export JSON** to download its evidence.
 
-1. Point out the broken `PricingCard`: the information icon has no accessible name, and the brand-blue CTA has insufficient white-text contrast.
-2. Press **Start Repair**. ConstraintFix runs axe-core, WCAG contrast math, protected-token equality, and DOM overflow checks against the rendered interface.
-3. The agent autonomously adds `aria-label="Plan information"`, then re-verifies. The contrast failure remains.
-4. It changes the CTA background from `#60A5FA` to `#2563EB`. Accessibility passes, but the protected-brand check fails.
-5. The agent stops at **Human decision required**. Choose **Preserve Brand**.
-6. The replan restores `#60A5FA` and changes CTA foreground text to `#0F172A` instead. The final card shows accessibility, brand, and layout as **PASS**.
+The alternate **Allow Change** path deliberately creates an approved brand exception. It never calls a protected-token failure a pass.
 
-The alternate **Allow Change** path deliberately records a human-approved brand exception instead of silently treating it as a pass.
+## What is enforced
 
-## Architecture
+`src/transactions/types.ts` defines the strongly typed transaction model. `src/transactions/contract.ts` provides the contract and converts browser results into immutable verifier snapshots.
+
+| Contract | Deterministic verifier |
+| --- | --- |
+| WCAG AA, zero violations | `axe-core` button-name audit and independent contrast-ratio calculation (minimum 4.5:1) |
+| Brand `#60A5FA` protected | Exact computed CSS color equality against `rgb(96, 165, 250)` |
+| Responsive at 375px | DOM geometry and horizontal-overflow checks inside the live preview |
+| Autonomy | Low-risk semantic patch is automatic; protected-token changes and ambiguous trade-offs require a human choice |
+
+`RepairTransaction` tracks the run, Candidate A and Candidate B, verifier evidence, automatic rollback, and the human decision. A successful run creates `ConstraintReceipt` **CF-018** with the source, original violations, full candidate history, final verification, rollback count, and intervention record. The receipt is locally exportable as JSON.
+
+## What is AI-driven and what is real
+
+The provider may propose a brief, structured next action and a reason. It cannot mutate the UI, skip a gate, mark verification successful, or overwrite a protected constraint. The real implementation is the browser-rendered executor, axe-core audit, contrast math, brand equality, layout verifier, state-based rollback, transaction history, and receipt generator.
 
 ```text
-AgentProvider (OpenAI or mock)
-        ↓ structured repair decision
-Deterministic executor
-        ↓ React render
-axe-core + contrast + protected token + DOM geometry
+AgentProvider (mock or optional OpenAI)
+        ↓ structured proposal
+Bounded demo executor
+        ↓ browser render
+Deterministic verifier suite
         ↓
-verified result, conflict, or human gate
+accept · reject and rollback · ask human
+        ↓
+constraint receipt
 ```
 
-`src/agent/types.ts` is the contract. The application only depends on `AgentProvider`; it does not depend on a model SDK. `src/agent/provider.ts` selects the provider, and `src/agent/fallback-agent.ts` keeps the demo moving if the decision service cannot respond.
+The main app depends only on the `AgentProvider` interface in `src/agent/types.ts`. `src/agent/provider.ts` selects the configured provider, and `src/agent/fallback-agent.ts` falls back to the deterministic mock if the optional decision service is unavailable.
 
-Reusable app-shell controls live in `src/components/ui`: `LiquidMetalButton` is the primary Start Repair CTA and `GradientButton` is used for the human decision controls. The supplied ConstraintFix mark is used in the application header. A real OGL `Ferrofluid` canvas runs behind the entire shell with the configured `#000000`, `#080445`, and `#003cff` palette, downward flow, and page-level cursor response. `ScrambledText` gives the headline a hover response, `CursorGrid` marks the live render surface, `ThoughtLine` and `LatticeLoader` expose reasoning progress, `Strands` reinforces the agent field, and `BorderGlow` focuses the human decision. The deliberately broken fixture remains isolated at `src/fixtures/pricing-card.tsx`.
+Reusable app-shell controls are under `src/components/ui`. The primary Start Repair CTA uses `LiquidMetalButton`; the human decision uses `GradientButton`. The supplied ConstraintFix logo appears in the header. The OGL Ferrofluid canvas uses the requested `#000000`, `#080445`, and `#003cff` palette across the complete background. The deliberately broken fixture remains isolated at `src/fixtures/pricing-card.tsx`.
 
-## What is real
+## Optional OpenAI provider
 
-- React, Vite, TypeScript, Tailwind CSS v4, and shadcn-style aliases
-- A rendered-browser axe-core audit for the `button-name` semantic repair
-- Independent WCAG contrast-ratio calculation for the repaired CTA
-- Exact protected-token check for `#60A5FA`
-- DOM geometry and horizontal-overflow verification inside the real 375px preview viewport
-- The state machine: `IDLE → AUDITING → PLANNING → PATCHING → RENDERING → VERIFYING → WAITING_FOR_HUMAN → REPLANNING → COMPLETE` (or `FAILED`)
-- A production build and static preview path
+Mock mode is the recommended judge setting. It is deterministic and requires no credentials.
 
-## Optional OpenAI decision layer
-
-The real provider is implemented, but it is optional so the judge flow stays reliable without network access. It uses the Responses API with Structured Outputs. The API key is read only by the local Vite server route at `server/openai-proxy.ts`; it is never sent to the browser and `.env.local` is ignored by Git.
+The optional OpenAI provider is ready for a local development session. Its Responses API call runs only in the Vite server middleware at `server/openai-proxy.ts`; the browser only calls `/api/agent/decision`, and the API key never receives a `VITE_` prefix.
 
 ```bash
 cp .env.example .env.local
 ```
 
-Set these values in `.env.local`:
+Set the following in `.env.local`, then restart the development server:
 
 ```dotenv
 OPENAI_API_KEY=your_key_here
 OPENAI_MODEL=gpt-5-mini
-VITE_AGENT_PROVIDER=openai
+VITE_AGENT_MODE=live
 ```
 
-Then restart `npm run dev`. `gpt-5-mini` supports the Responses API and Structured Outputs, and is a practical choice for this narrowly scoped decision task. The server validates every model decision against the permitted demo action for the current stage. The model proposes the structured decision and reason; it never performs the patch or marks verification as successful.
-
-If the network, key, API, or response contract fails, the browser switches to the local mock provider and adds a visible **Demo-safe fallback engaged** timeline event. For a deployed production application, move the same route into the chosen server or serverless runtime; a static Vite host cannot hold a server-side API secret.
-
-Official OpenAI references: [Responses API](https://developers.openai.com/api/reference/cli/resources/responses/methods/create) and [GPT-5 Mini](https://developers.openai.com/api/docs/models/gpt-5-mini).
+Live mode uses structured decisions and validates every response against the fixed demo action contract. If the endpoint, API key, network, or structured response fails, it visibly switches to the local mock provider and continues the demo safely. `VITE_AGENT_PROVIDER=openai` remains supported for existing local configurations, but `VITE_AGENT_MODE=live` is the preferred activation path.
