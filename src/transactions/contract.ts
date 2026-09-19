@@ -77,6 +77,8 @@ function candidate(id: CandidateId, source: DecisionSource): RepairCandidate {
 export function createRepairTransaction(initialVerification: VerificationSnapshot, source: DecisionSource): RepairTransaction {
   return {
     id: "CF-018",
+    transactionId: crypto.randomUUID(),
+    component: "PricingCard.tsx",
     source,
     status: "running",
     startedAt: new Date().toISOString(),
@@ -116,6 +118,9 @@ export function createConstraintReceipt(transaction: RepairTransaction): Constra
 
   return {
     receiptId: transaction.id,
+    runId: transaction.id,
+    transactionId: transaction.transactionId,
+    component: transaction.component,
     generatedAt: new Date().toISOString(),
     source: transaction.source,
     contract: constraintContract,

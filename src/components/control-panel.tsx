@@ -44,7 +44,8 @@ export function ControlPanel({ phase, running, onStart, onReset }: ControlPanelP
             <button
               type="button"
               onClick={onReset}
-              className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-xs font-semibold text-zinc-300 transition hover:bg-white/[0.07]"
+              disabled={running}
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-xs font-semibold text-zinc-300 transition hover:bg-white/[0.07] disabled:cursor-not-allowed disabled:opacity-45"
             >
               <RotateCcw size={14} /> Reset demo
             </button>

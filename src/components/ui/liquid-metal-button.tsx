@@ -280,13 +280,13 @@ export function LiquidMetalButton({
               background: "transparent",
               border: "none",
               cursor: disabled ? "not-allowed" : "pointer",
-              outline: "none",
               zIndex: 40,
               transformStyle: "preserve-3d",
               transform: "translateZ(25px)",
               overflow: "hidden",
               borderRadius: "100px",
             }}
+            className="liquid-metal-button"
             aria-label={label}
           >
             {ripples.map((ripple) => (

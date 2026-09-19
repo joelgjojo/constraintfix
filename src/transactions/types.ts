@@ -72,6 +72,8 @@ export interface HumanIntervention {
 
 export interface RepairTransaction {
   id: "CF-018";
+  transactionId: string;
+  component: "PricingCard.tsx";
   source: DecisionSource;
   status: TransactionStatus;
   startedAt: string;
@@ -85,6 +87,9 @@ export interface RepairTransaction {
 
 export interface ConstraintReceipt {
   receiptId: "CF-018";
+  runId: "CF-018";
+  transactionId: string;
+  component: "PricingCard.tsx";
   generatedAt: string;
   source: DecisionSource;
   contract: ConstraintContract;

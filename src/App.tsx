@@ -36,6 +36,7 @@ function App() {
   const previewRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLButtonElement>(null);
+  const operationLockRef = useRef(false);
 
   const [stage, setStage] = useState(0);
   const [phase, setPhase] = useState<AgentPhase>("idle");
@@ -115,7 +116,8 @@ function App() {
   };
 
   const startRepair = async () => {
-    if (running) return;
+    if (running || operationLockRef.current) return;
+    operationLockRef.current = true;
     setRunning(true);
     setBrandOverride(false);
     setEvents([]);
@@ -229,12 +231,14 @@ function App() {
       console.error(error);
       failTransaction(error instanceof Error ? error.message : "Unknown transaction error.");
     } finally {
+      operationLockRef.current = false;
       setRunning(false);
     }
   };
 
   const preserveBrand = async () => {
-    if (running || !transaction) return;
+    if (running || operationLockRef.current || !transaction) return;
+    operationLockRef.current = true;
     setRunning(true);
     let currentTransaction = updateTransaction(
       updateCandidate(transaction, "candidate-b", { status: "running" }),
@@ -293,12 +297,14 @@ function App() {
       console.error(error);
       failTransaction(error instanceof Error ? error.message : "Candidate B failed.");
     } finally {
+      operationLockRef.current = false;
       setRunning(false);
     }
   };
 
   const allowChange = async () => {
-    if (running || !transaction) return;
+    if (running || operationLockRef.current || !transaction) return;
+    operationLockRef.current = true;
     setRunning(true);
     let currentTransaction = updateTransaction(
       updateCandidate(transaction, "candidate-a", { status: "running", rollbackApplied: false }),
@@ -345,11 +351,13 @@ function App() {
       console.error(error);
       failTransaction(error instanceof Error ? error.message : "Approved exception failed.");
     } finally {
+      operationLockRef.current = false;
       setRunning(false);
     }
   };
 
   const reset = () => {
+    if (running || operationLockRef.current) return;
     setStage(0);
     setPhase("idle");
     setEvents([]);

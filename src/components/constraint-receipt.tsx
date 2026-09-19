@@ -1,4 +1,5 @@
-import { CheckCircle2, Download, FileCheck2, ShieldAlert } from "lucide-react";
+import { Download, FileCheck2, ShieldAlert } from "lucide-react";
+import { useState } from "react";
 import type { ConstraintReceipt as ConstraintReceiptData } from "@/transactions/types";
 
 interface ConstraintReceiptProps {
@@ -7,17 +8,19 @@ interface ConstraintReceiptProps {
 
 export function ConstraintReceipt({ receipt }: ConstraintReceiptProps) {
   const hasException = receipt.transactionStatus === "approved_exception";
+  const [exported, setExported] = useState(false);
 
   const exportReceipt = () => {
     const file = new Blob([JSON.stringify(receipt, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(file);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `constraint-receipt-${receipt.receiptId.toLowerCase()}.json`;
+    anchor.download = `constraint-receipt-${receipt.runId.toLowerCase()}-${receipt.transactionId.slice(0, 8)}.json`;
     document.body.append(anchor);
     anchor.click();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    setExported(true);
   };
 
   return (
@@ -34,12 +37,12 @@ export function ConstraintReceipt({ receipt }: ConstraintReceiptProps) {
             <span className={hasException ? "text-amber-300" : "text-emerald-300"}>{hasException ? "Approved exception" : "Accepted and verified"}</span>
           </div>
           <p className="mt-1 text-[11px] text-zinc-500">
-            {receipt.candidateHistory.length} candidates · {receipt.rollbackCount} automatic rollback · {receipt.humanIntervention.choice ? `human choice: ${receipt.humanIntervention.choice.replaceAll("_", " ")}` : "no human override"}
+            {receipt.component} · source {receipt.source} · transaction {receipt.transactionId.slice(0, 8)} · {receipt.candidateHistory.length} candidates · {receipt.rollbackCount} automatic rollback · {receipt.humanIntervention.choice ? `human choice: ${receipt.humanIntervention.choice.replaceAll("_", " ")}` : "no human override"}
           </p>
         </div>
       </div>
       <button type="button" onClick={exportReceipt} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 text-xs font-semibold text-zinc-200 transition hover:border-sky-300/30 hover:bg-sky-300/[0.07]">
-        <Download size={14} /> Export JSON
+        <Download size={14} /> {exported ? "JSON exported" : "Export JSON"}
       </button>
     </section>
   );

@@ -70,7 +70,7 @@ Reusable app-shell controls are under `src/components/ui`. The primary Start Rep
 
 Mock mode is the recommended judge setting. It is deterministic and requires no credentials.
 
-The optional OpenAI provider is ready for a local development session. Its Responses API call runs only in the Vite server middleware at `server/openai-proxy.ts`; the browser only calls `/api/agent/decision`, and the API key never receives a `VITE_` prefix.
+The optional OpenAI provider is ready for a local development session. Its Responses API call runs only in the Vite server middleware at `server/openai-proxy.ts`; the browser only calls `/api/agent/decision`, and the API key never receives a `VITE_` prefix. In mock or replay mode, that route is not registered at all.
 
 ```bash
 cp .env.example .env.local
