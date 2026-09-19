@@ -31,20 +31,20 @@ export function DecisionCard({ onPreserveBrand, onAllowChange, onReset, disabled
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <div className="group rounded-2xl border border-sky-400/20 bg-sky-400/[0.05] p-4 text-left transition hover:border-sky-300/40 hover:bg-sky-300/[0.08]">
+          <div className="rounded-2xl border border-sky-400/20 bg-sky-400/[0.05] p-4 text-left">
             <div className="flex items-center justify-between">
               <span className="grid h-8 w-8 place-items-center rounded-xl bg-sky-300/10 text-sky-300"><GitBranch size={15} /></span>
-              <ArrowRight size={14} className="text-zinc-600 transition group-hover:translate-x-0.5 group-hover:text-zinc-300" />
+              <ArrowRight size={14} className="text-zinc-600" />
             </div>
             <div className="mt-4 text-sm font-semibold text-zinc-100">Preserve brand</div>
             <div className="mt-1 text-[11px] leading-5 text-zinc-500">Keep the token and let Candidate B change foreground text instead.</div>
             <GradientButton disabled={disabled} onClick={onPreserveBrand} className="mt-4 w-full min-w-0">Preserve Brand</GradientButton>
           </div>
 
-          <div className="group rounded-2xl border border-white/10 bg-white/[0.025] p-4 text-left transition hover:border-white/20 hover:bg-white/[0.04]">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4 text-left">
             <div className="flex items-center justify-between">
               <span className="grid h-8 w-8 place-items-center rounded-xl bg-white/[0.05] text-zinc-400"><Sparkles size={15} /></span>
-              <ArrowRight size={14} className="text-zinc-600 transition group-hover:translate-x-0.5 group-hover:text-zinc-300" />
+              <ArrowRight size={14} className="text-zinc-600" />
             </div>
             <div className="mt-4 text-sm font-semibold text-zinc-100">Allow visual change</div>
             <div className="mt-1 text-[11px] leading-5 text-zinc-500">Accept the new CTA background as an explicit human-approved exception.</div>

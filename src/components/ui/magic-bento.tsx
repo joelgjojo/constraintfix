@@ -169,7 +169,7 @@ export function MagicBento({
       onPointerEnter={onPointerEnter}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
-      onClick={onClick}
+      onClick={clickEffect ? onClick : undefined}
     >
       <span className="magic-bento__spotlight" aria-hidden="true" />
       <span className="magic-bento__border" aria-hidden="true" />

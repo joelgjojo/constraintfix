@@ -98,8 +98,8 @@ export function LiquidMetalButton({
           0.6,
         );
       }
-    } catch (error) {
-      console.error("[ConstraintFix] Failed to mount liquid shader:", error);
+    } catch {
+      // The native button and its non-WebGL layers remain fully usable.
     }
 
     return () => {

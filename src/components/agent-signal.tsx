@@ -9,19 +9,20 @@ import { Strands } from "@/components/ui/strands";
 interface AgentSignalProps {
   phase: AgentPhase;
   provider: string;
+  brandOverride?: boolean;
 }
 
 const workingPhases: AgentPhase[] = ["auditing", "planning", "patching", "rendering", "verifying", "replanning"];
 
 const readablePhase = (phase: AgentPhase) => phase.replaceAll("_", " ");
 
-export function AgentSignal({ phase, provider }: AgentSignalProps) {
+export function AgentSignal({ phase, provider, brandOverride = false }: AgentSignalProps) {
   const working = workingPhases.includes(phase);
   const settled = phase === "complete";
   const failed = phase === "failed";
   const paused = phase === "conflict" || phase === "waiting_for_human";
-  const status = settled ? "done" : failed ? "error" : working ? "working" : "idle";
-  const label = settled ? "Verification proof settled" : failed ? "Execution needs review" : paused ? "Awaiting product choice" : working ? "Running bounded operation" : "Ready to inspect a live render";
+  const status = settled ? brandOverride ? "warning" : "done" : failed ? "error" : working ? "working" : "idle";
+  const label = settled ? brandOverride ? "Approved exception recorded" : "Verification proof settled" : failed ? "Execution needs review" : paused ? "Awaiting product choice" : working ? "Running bounded operation" : "Ready to inspect a live render";
 
   return (
     <BorderGlow className="agent-signal" glowColor="96, 165, 250" animated>

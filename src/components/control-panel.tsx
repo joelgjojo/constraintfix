@@ -6,16 +6,18 @@ import { LiquidMetalButton } from "@/components/ui/liquid-metal-button";
 interface ControlPanelProps {
   phase: AgentPhase;
   running: boolean;
+  brandOverride?: boolean;
   onStart: () => void;
   onReset: () => void;
 }
 
-export function ControlPanel({ phase, running, onStart, onReset }: ControlPanelProps) {
+export function ControlPanel({ phase, running, brandOverride = false, onStart, onReset }: ControlPanelProps) {
   const complete = phase === "complete";
+  const completedWithException = complete && brandOverride;
   const waiting = phase === "waiting_for_human";
   const failed = phase === "failed";
-  const loaderStatus = complete ? "done" : failed ? "error" : running ? "working" : "idle";
-  const loaderLabel = complete ? "Proof complete" : failed ? "Repair stopped" : running ? "Deterministic checks live" : "Ready to verify";
+  const loaderStatus = completedWithException ? "warning" : complete ? "done" : failed ? "error" : running ? "working" : "idle";
+  const loaderLabel = completedWithException ? "Approved exception recorded" : complete ? "Proof complete" : failed ? "Repair stopped" : running ? "Deterministic checks live" : "Ready to verify";
 
   return (
     <section className="panel relative overflow-hidden p-5">
@@ -27,10 +29,10 @@ export function ControlPanel({ phase, running, onStart, onReset }: ControlPanelP
             <span className="grid h-8 w-8 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-zinc-400"><TerminalSquare size={15} /></span>
             <div>
               <h2 className="text-sm font-semibold text-zinc-100">
-                {complete ? "Verified repair complete" : waiting ? "Agent paused for judgment" : running ? "ConstraintFix is working" : "Ready to inspect the interface"}
+                {completedWithException ? "Repair completed with exception" : complete ? "Verified repair complete" : waiting ? "Agent paused for judgment" : running ? "ConstraintFix is working" : "Ready to inspect the interface"}
               </h2>
               <p className="mt-0.5 text-[11px] text-zinc-600">
-                {complete ? "All required constraints passed deterministic verification." : waiting ? "Autonomy stops where product judgment begins." : "Mock, replay, or server-only Codex can propose; execution and proof stay deterministic."}
+                {completedWithException ? "Accessibility and layout passed; the protected brand token remains a human-approved exception." : complete ? "All required constraints passed deterministic verification." : waiting ? "Autonomy stops where product judgment begins." : "Mock, replay, or server-only Codex can propose; execution and proof stay deterministic."}
               </p>
               <LatticeLoader status={loaderStatus} label={loaderLabel} className="mt-2" />
             </div>

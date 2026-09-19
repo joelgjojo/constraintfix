@@ -42,7 +42,7 @@ export function ScrambledText({ children, className = "", scrambleChars = ".:/" 
   };
 
   return (
-    <span className={`scrambled-text ${className}`} onPointerEnter={scramble} onFocus={scramble} tabIndex={0}>
+    <span className={`scrambled-text ${className}`} onPointerEnter={scramble}>
       <span aria-hidden="true">{displayed}</span>
       <span className="sr-only">{children}</span>
     </span>

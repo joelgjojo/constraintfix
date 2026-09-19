@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Code2, Cpu, ShieldCheck } from "lucide-react";
-import { agentProvider, requestedProvider } from "@/agent/provider";
+import { agentProvider, requestedProvider, resolveAgentMode } from "@/agent/provider";
 import type { AgentEvent, AgentPhase, DecisionSource, VerificationResult } from "@/agent/types";
 import constraintFixLogo from "@/assets/constraintfix-logo.png";
 import { AgentSignal } from "@/components/agent-signal";
@@ -21,6 +21,7 @@ import {
   updateCandidate,
   updateTransaction,
 } from "@/transactions/contract";
+import { createIdleDemoState, createOperationGate } from "@/transactions/interaction";
 import type { ConstraintReceipt as ConstraintReceiptData, RepairTransaction } from "@/transactions/types";
 import { verifyInterface } from "@/verification/constraints";
 
@@ -29,7 +30,7 @@ const nextPaint = () => new Promise<void>((resolve) => requestAnimationFrame(() 
 const ferrofluidColors = ["#000000", "#080445", "#003cff"];
 
 function configuredSource(): DecisionSource {
-  const mode = (import.meta.env.VITE_AGENT_MODE ?? import.meta.env.VITE_AGENT_PROVIDER ?? "mock").toLowerCase();
+  const mode = resolveAgentMode(import.meta.env.VITE_AGENT_MODE ?? import.meta.env.VITE_AGENT_PROVIDER);
   return mode === "live" ? "codex_live" : mode === "replay" ? "codex_replay" : "mock";
 }
 
@@ -37,7 +38,7 @@ function App() {
   const previewRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLButtonElement>(null);
-  const operationLockRef = useRef(false);
+  const operationGateRef = useRef(createOperationGate());
 
   const [stage, setStage] = useState(0);
   const [phase, setPhase] = useState<AgentPhase>("idle");
@@ -117,8 +118,7 @@ function App() {
   };
 
   const startRepair = async () => {
-    if (running || operationLockRef.current) return;
-    operationLockRef.current = true;
+    if (running || !operationGateRef.current.tryAcquire()) return;
     setRunning(true);
     setBrandOverride(false);
     setEvents([]);
@@ -268,14 +268,13 @@ function App() {
       console.error(error);
       failTransaction(error instanceof Error ? error.message : "Unknown transaction error.");
     } finally {
-      operationLockRef.current = false;
+      operationGateRef.current.release();
       setRunning(false);
     }
   };
 
   const preserveBrand = async () => {
-    if (running || operationLockRef.current || !transaction) return;
-    operationLockRef.current = true;
+    if (running || !transaction || !operationGateRef.current.tryAcquire()) return;
     setRunning(true);
     let currentTransaction = updateTransaction(
       updateCandidate(transaction, "candidate-b", { status: "running" }),
@@ -336,17 +335,16 @@ function App() {
       console.error(error);
       failTransaction(error instanceof Error ? error.message : "Candidate B failed.");
     } finally {
-      operationLockRef.current = false;
+      operationGateRef.current.release();
       setRunning(false);
     }
   };
 
   const allowChange = async () => {
-    if (running || operationLockRef.current || !transaction) return;
-    operationLockRef.current = true;
+    if (running || !transaction || !operationGateRef.current.tryAcquire()) return;
     setRunning(true);
     let currentTransaction = updateTransaction(
-      updateCandidate(transaction, "candidate-a", { status: "running", rollbackApplied: false }),
+      updateCandidate(transaction, "candidate-a", { status: "running" }),
       "running",
       { humanIntervention: { required: true, choice: "allow_change", reason: "Human approved a protected brand exception." } },
     );
@@ -384,21 +382,22 @@ function App() {
       console.error(error);
       failTransaction(error instanceof Error ? error.message : "Approved exception failed.");
     } finally {
-      operationLockRef.current = false;
+      operationGateRef.current.release();
       setRunning(false);
     }
   };
 
   const reset = () => {
-    if (running || operationLockRef.current) return;
-    setStage(0);
-    setPhase("idle");
-    setEvents([]);
-    setVerification(null);
-    setTransaction(null);
-    setReceipt(null);
-    setRunning(false);
-    setBrandOverride(false);
+    if (running || operationGateRef.current.isLocked()) return;
+    const idleState = createIdleDemoState();
+    setStage(idleState.stage);
+    setPhase(idleState.phase);
+    setEvents(idleState.events);
+    setVerification(idleState.verification);
+    setTransaction(idleState.transaction);
+    setReceipt(idleState.receipt);
+    setRunning(idleState.running);
+    setBrandOverride(idleState.brandOverride);
   };
 
   return (
@@ -445,7 +444,7 @@ function App() {
           </div>
 
           <div className="grid gap-2">
-            <AgentSignal phase={phase} provider={requestedProvider} />
+            <AgentSignal phase={phase} provider={requestedProvider} brandOverride={brandOverride} />
             <div className="grid grid-cols-3 gap-2">
               <div className="metric-card"><Cpu size={14} /><span>Propose</span><strong>{requestedProvider}</strong></div>
               <div className="metric-card"><Code2 size={14} /><span>Execute</span><strong>Bounded</strong></div>
@@ -467,7 +466,7 @@ function App() {
             <DecisionCard onPreserveBrand={preserveBrand} onAllowChange={allowChange} onReset={reset} disabled={running} />
           ) : (
             <MagicBento className="min-w-0" enableStars enableSpotlight enableBorderGlow enableTilt={false} enableMagnetism={false} clickEffect={false} particleCount={7} glowColor="56, 189, 248">
-              <ControlPanel phase={phase} running={running} onStart={startRepair} onReset={reset} />
+              <ControlPanel phase={phase} running={running} brandOverride={brandOverride} onStart={startRepair} onReset={reset} />
             </MagicBento>
           )}
         </section>

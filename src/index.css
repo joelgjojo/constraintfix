@@ -78,14 +78,6 @@ button:focus-visible {
 .scrambled-text {
   position: relative;
   display: inline;
-  cursor: crosshair;
-  outline: none;
-}
-
-.scrambled-text:focus-visible {
-  border-radius: 4px;
-  outline: 1px solid rgba(96, 165, 250, 0.72);
-  outline-offset: 4px;
 }
 
 .cursor-grid {
@@ -228,6 +220,8 @@ button:focus-visible {
 .lattice-loader--done .lattice-loader__grid i { background: rgba(52, 211, 153, 0.22); }
 .lattice-loader--error { color: #fda4af; }
 .lattice-loader--error .lattice-loader__grid i { background: rgba(251, 113, 133, 0.22); }
+.lattice-loader--warning { color: #fcd34d; }
+.lattice-loader--warning .lattice-loader__grid i { background: rgba(251, 191, 36, 0.22); }
 
 .lattice-loader__mark {
   position: absolute;
@@ -390,16 +384,22 @@ button:focus-visible {
   opacity: 0;
 }
 
-.pricing-card:hover {
+.pricing-card:focus-within,
+.pricing-card:has(.pricing-card__info:hover),
+.pricing-card:has(.pricing-card__cta:hover) {
   border-color: rgba(125, 211, 252, 0.26);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(96, 165, 250, 0.06);
 }
 
-.pricing-card:hover .pricing-card__aura {
+.pricing-card:focus-within .pricing-card__aura,
+.pricing-card:has(.pricing-card__info:hover) .pricing-card__aura,
+.pricing-card:has(.pricing-card__cta:hover) .pricing-card__aura {
   opacity: 0.95;
 }
 
-.pricing-card:hover .pricing-card__scanline {
+.pricing-card:focus-within .pricing-card__scanline,
+.pricing-card:has(.pricing-card__info:hover) .pricing-card__scanline,
+.pricing-card:has(.pricing-card__cta:hover) .pricing-card__scanline {
   opacity: 1;
   animation: pricing-card-scan 950ms cubic-bezier(.2, .72, .3, 1) both;
 }
@@ -448,7 +448,9 @@ button:focus-visible {
   background-position: 115% 0;
 }
 
-.pricing-card:hover .pricing-card__divider::after {
+.pricing-card:focus-within .pricing-card__divider::after,
+.pricing-card:has(.pricing-card__info:hover) .pricing-card__divider::after,
+.pricing-card:has(.pricing-card__cta:hover) .pricing-card__divider::after {
   animation: pricing-card-divider 1.15s ease-out both;
 }
 
@@ -470,7 +472,9 @@ button:focus-visible {
   background-position: 115% 0;
 }
 
-.pricing-card:hover .pricing-card__cta {
+.pricing-card:focus-within .pricing-card__cta,
+.pricing-card:has(.pricing-card__info:hover) .pricing-card__cta,
+.pricing-card:has(.pricing-card__cta:hover) .pricing-card__cta {
   box-shadow: 0 15px 30px rgba(96, 165, 250, 0.19), 0 10px 24px rgba(0, 0, 0, 0.22);
   filter: saturate(1.06) brightness(1.03);
 }
@@ -479,7 +483,9 @@ button:focus-visible {
   transform: translateY(-1px);
 }
 
-.pricing-card:hover .pricing-card__cta::after {
+.pricing-card:focus-within .pricing-card__cta::after,
+.pricing-card:has(.pricing-card__info:hover) .pricing-card__cta::after,
+.pricing-card:has(.pricing-card__cta:hover) .pricing-card__cta::after {
   opacity: 1;
   animation: pricing-card-cta-sheen 1.1s cubic-bezier(.18, .72, .25, 1) both;
 }
@@ -523,9 +529,9 @@ button:focus-visible {
   .pricing-card__aura,
   .pricing-card__info,
   .pricing-card__cta { transition: none; }
-  .pricing-card:hover .pricing-card__scanline,
-  .pricing-card:hover .pricing-card__divider::after,
-  .pricing-card:hover .pricing-card__cta::after,
+  .pricing-card:focus-within .pricing-card__scanline,
+  .pricing-card:focus-within .pricing-card__divider::after,
+  .pricing-card:focus-within .pricing-card__cta::after,
   .pricing-card--stage-3 .pricing-card__aura { animation: none; }
 }
 

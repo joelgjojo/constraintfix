@@ -1,4 +1,5 @@
-import { Monitor, Smartphone } from "lucide-react";
+import { Smartphone } from "lucide-react";
+import { useEffect, useState } from "react";
 import { PricingCard } from "@/fixtures/pricing-card";
 import { CursorGrid } from "@/components/ui/cursor-grid";
 
@@ -17,6 +18,12 @@ const stageLabels: Record<number, string> = {
 };
 
 export function LivePreview({ stage, previewRef, cardRef, ctaRef }: LivePreviewProps) {
+  const [previewNotice, setPreviewNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPreviewNotice(null);
+  }, [stage]);
+
   return (
     <section className="panel flex min-h-[560px] flex-col overflow-hidden">
       <div className="panel-header">
@@ -28,11 +35,12 @@ export function LivePreview({ stage, previewRef, cardRef, ctaRef }: LivePreviewP
               {stageLabels[stage] ?? "Working"}
             </span>
           </div>
+          <p className="mt-2 text-[10px] text-zinc-600">Inspected fixture · local controls only · no navigation or checkout</p>
+          {previewNotice && <p className="mt-1 text-[10px] text-sky-200" role="status">{previewNotice}</p>}
         </div>
-        <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-black/20 p-1 text-zinc-500">
-          <span className="rounded-md bg-white/[0.06] p-1.5 text-zinc-300"><Smartphone size={13} /></span>
-          <span className="p-1.5"><Monitor size={13} /></span>
-          <span className="px-1.5 text-[10px]">375px</span>
+        <div className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 text-zinc-500">
+          <Smartphone size={13} aria-hidden="true" />
+          <span className="text-[10px]">375px verifier viewport</span>
         </div>
       </div>
 
@@ -44,7 +52,7 @@ export function LivePreview({ stage, previewRef, cardRef, ctaRef }: LivePreviewP
           ref={previewRef}
           className="relative w-full max-w-[375px] overflow-hidden rounded-2xl border border-white/[0.07] bg-[#080a0d] p-4 shadow-2xl shadow-black/30"
         >
-          <PricingCard stage={stage} ref={cardRef} ctaRef={ctaRef} />
+          <PricingCard stage={stage} ref={cardRef} ctaRef={ctaRef} onPreviewAction={setPreviewNotice} />
         </div>
       </div>
     </section>

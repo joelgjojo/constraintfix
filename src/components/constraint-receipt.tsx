@@ -1,5 +1,6 @@
 import { Download, FileCheck2, ShieldAlert } from "lucide-react";
 import { useState } from "react";
+import { serializeConstraintReceipt } from "@/transactions/contract";
 import type { ConstraintReceipt as ConstraintReceiptData } from "@/transactions/types";
 
 interface ConstraintReceiptProps {
@@ -11,7 +12,7 @@ export function ConstraintReceipt({ receipt }: ConstraintReceiptProps) {
   const [exported, setExported] = useState(false);
 
   const exportReceipt = () => {
-    const file = new Blob([JSON.stringify(receipt, null, 2)], { type: "application/json" });
+    const file = new Blob([serializeConstraintReceipt(receipt)], { type: "application/json" });
     const url = URL.createObjectURL(file);
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -19,7 +20,7 @@ export function ConstraintReceipt({ receipt }: ConstraintReceiptProps) {
     document.body.append(anchor);
     anchor.click();
     anchor.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
     setExported(true);
   };
 

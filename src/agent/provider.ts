@@ -4,7 +4,15 @@ import { withDemoFallback } from "@/agent/fallback-agent";
 import { mockAgent } from "@/agent/mock-agent";
 import { replayAgent } from "@/agent/replay-agent";
 
-const configuredMode = (import.meta.env.VITE_AGENT_MODE ?? import.meta.env.VITE_AGENT_PROVIDER ?? "mock").toLowerCase();
+export type AgentMode = "mock" | "replay" | "live";
+
+export function resolveAgentMode(value?: string): AgentMode {
+  const normalized = value?.toLowerCase();
+  return normalized === "live" || normalized === "replay" ? normalized : "mock";
+}
+
+const browserEnvironment = import.meta.env as ImportMetaEnv | undefined;
+const configuredMode = resolveAgentMode(browserEnvironment?.VITE_AGENT_MODE ?? browserEnvironment?.VITE_AGENT_PROVIDER);
 const useCodexLive = configuredMode === "live";
 
 // The UI and verifier only depend on this interface. API credentials stay on the server.

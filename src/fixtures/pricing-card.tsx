@@ -4,10 +4,11 @@ import { forwardRef } from "react";
 interface PricingCardProps {
   stage: number;
   ctaRef: React.Ref<HTMLButtonElement>;
+  onPreviewAction: (message: string) => void;
 }
 
 export const PricingCard = forwardRef<HTMLDivElement, PricingCardProps>(
-  ({ stage, ctaRef }, ref) => {
+  ({ stage, ctaRef, onPreviewAction }, ref) => {
     const hasAccessibleName = stage >= 1;
 
     const ctaStyle =
@@ -29,6 +30,11 @@ export const PricingCard = forwardRef<HTMLDivElement, PricingCardProps>(
           <button
             type="button"
             aria-label={hasAccessibleName ? "Plan information" : undefined}
+            onClick={() => onPreviewAction(
+              hasAccessibleName
+                ? "Plan information acknowledged in this local fixture."
+                : "Intentional fixture issue: this icon receives its accessible name during repair.",
+            )}
             className="pricing-card__info grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-zinc-400"
           >
             <Info size={16} aria-hidden="true" />
@@ -61,6 +67,7 @@ export const PricingCard = forwardRef<HTMLDivElement, PricingCardProps>(
           ref={ctaRef}
           type="button"
           style={ctaStyle}
+          onClick={() => onPreviewAction("Get Pro acknowledged locally — this inspected fixture never navigates or checks out.")}
           className="pricing-card__cta mt-7 w-full rounded-xl px-4 py-3 text-sm font-bold shadow-lg shadow-black/20 transition-colors"
         >
           Get Pro
