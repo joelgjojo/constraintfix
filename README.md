@@ -67,7 +67,7 @@ constraint receipt
 
 The Vite server adapter at `server/codex-proxy.ts` creates a server-only `@openai/codex-sdk` thread in `read-only` sandbox mode with approvals and network disabled. A live transaction has at most two model turns: the initial proposal, then a **Preserve Brand** replan on the same thread with machine verification feedback. The browser receives no key, raw thread ID, or tool output.
 
-Reusable shell controls stay in `src/components/ui`. The header uses the supplied ConstraintFix logo; `LiquidMetalButton` is the primary Start Repair CTA; `GradientButton` handles the human decision. The OGL Ferrofluid background uses `#000000`, `#080445`, and `#003cff`. The deliberately broken fixture remains isolated in `src/fixtures/pricing-card.tsx`.
+Reusable shell controls stay in `src/components/ui`. The header uses the supplied ConstraintFix logo; `LiquidMetalButton` is the primary Start Repair CTA; `GradientButton` handles the human decision; and `MagicBento` gives the otherwise static Contract and Agent Control panels bounded hover effects. The OGL Ferrofluid background uses `#000000`, `#080445`, and `#003cff`. The deliberately broken fixture remains isolated in `src/fixtures/pricing-card.tsx`; the bento wrapper never encloses it.
 
 ## Modes and live setup
 

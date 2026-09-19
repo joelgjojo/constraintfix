@@ -12,6 +12,7 @@ import { ControlPanel } from "@/components/control-panel";
 import { DecisionCard } from "@/components/decision-card";
 import { LivePreview } from "@/components/live-preview";
 import Ferrofluid from "@/components/ui/ferrofluid";
+import { MagicBento } from "@/components/ui/magic-bento";
 import { ScrambledText } from "@/components/ui/scrambled-text";
 import {
   createConstraintReceipt,
@@ -459,11 +460,15 @@ function App() {
         </section>
 
         <section className="mt-4 grid gap-4 xl:grid-cols-[1.08fr_.92fr]">
-          <ConstraintPanel result={verification} brandOverride={brandOverride} />
+          <MagicBento className="min-w-0" enableStars enableSpotlight enableBorderGlow enableTilt={false} enableMagnetism={false} clickEffect={false} particleCount={7} glowColor="96, 165, 250">
+            <ConstraintPanel result={verification} brandOverride={brandOverride} />
+          </MagicBento>
           {phase === "waiting_for_human" ? (
             <DecisionCard onPreserveBrand={preserveBrand} onAllowChange={allowChange} onReset={reset} disabled={running} />
           ) : (
-            <ControlPanel phase={phase} running={running} onStart={startRepair} onReset={reset} />
+            <MagicBento className="min-w-0" enableStars enableSpotlight enableBorderGlow enableTilt={false} enableMagnetism={false} clickEffect={false} particleCount={7} glowColor="56, 189, 248">
+              <ControlPanel phase={phase} running={running} onStart={startRepair} onReset={reset} />
+            </MagicBento>
           )}
         </section>
 
