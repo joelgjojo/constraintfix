@@ -65,7 +65,7 @@ constraint receipt
 
 `src/agent/types.ts` is the stable provider boundary. `src/agent/candidate-schema.ts` validates every structured candidate at runtime. `src/agent/provider.ts` chooses the mode, and `src/agent/fallback-agent.ts` sends a failed live request to replay.
 
-`api/codex/decision.ts` is a Vercel Node function backed by the official OpenAI Responses API. It accepts only the two policy-approved planning stages, requests a strict JSON schema, enforces the expected mapped action, and returns no secret, prompt, or raw model output. It is stateless by design, so a deployment does not depend on a serverless function retaining memory between the candidate and replan requests. `server/codex-proxy.ts` mounts that same handler for local Vite development.
+`api/codex/decision.js` is a Vercel Node function backed by the official OpenAI Responses API. It accepts only the two policy-approved planning stages, requests a strict JSON schema, enforces the expected mapped action, and returns no secret, prompt, or raw model output. It is stateless by design, so a deployment does not depend on a serverless function retaining memory between the candidate and replan requests. `server/codex-proxy.ts` mounts that same handler for local Vite development.
 
 Reusable shell controls stay in `src/components/ui`. The header uses the supplied ConstraintFix logo; `LiquidMetalButton` is the primary Start Repair CTA; `GradientButton` handles the human decision; and `MagicBento` gives the otherwise static Contract and Agent Control panels bounded hover effects. The OGL Ferrofluid background uses `#000000`, `#080445`, and `#003cff`. The deliberately broken fixture remains isolated in `src/fixtures/pricing-card.tsx`; the bento wrapper never encloses it.
 
@@ -95,7 +95,7 @@ Live requests are not retried automatically. A timeout, missing authentication, 
 
 ## Deploy to Vercel
 
-Vercel detects the Vite app and the `api/codex/decision.ts` server function automatically. Import this repository, keep the repository root as the project root, and add these environment variables in **Project Settings → Environment Variables** for Production and Preview:
+Vercel detects the Vite app and the `api/codex/decision.js` server function automatically. Import this repository, keep the repository root as the project root, and add these environment variables in **Project Settings → Environment Variables** for Production and Preview:
 
 ```dotenv
 VITE_AGENT_MODE=live

@@ -10,7 +10,7 @@ import type { AgentProvider } from "../src/agent/types";
 import { createConstraintReceipt, createRepairTransaction, serializeConstraintReceipt, updateCandidate, updateTransaction } from "../src/transactions/contract";
 import { createIdleDemoState, createOperationGate } from "../src/transactions/interaction";
 import type { VerificationSnapshot } from "../src/transactions/types";
-import { __testables as serverTestables } from "../api/codex/decision";
+import { __testables as serverTestables } from "../api/codex/decision.js";
 
 function installBrowserStorage() {
   const values = new Map<string, string>();

@@ -1,25 +1,6 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
-import { isStructuredRepairCandidate, openaiCandidateSchema } from "../../src/agent/candidate-schema";
-import type { StructuredRepairCandidate } from "../../src/agent/types";
-
-type LiveStage = 1 | 2;
-
-interface LiveDecisionInput {
-  transactionId: string;
-  stage: LiveStage;
-  verification: {
-    accessibilityPass?: boolean;
-    contrastRatio?: number;
-    brandPass?: boolean;
-    layoutPass?: boolean;
-    brandColor?: string;
-  } | null;
-  humanChoice?: "preserve_brand";
-}
-
 const maxRequestBytes = 20_000;
 
-function writeJson(response: ServerResponse, status: number, body: unknown) {
+function writeJson(response, status, body) {
   response.writeHead(status, {
     "content-type": "application/json; charset=utf-8",
     "cache-control": "no-store",
@@ -27,7 +8,7 @@ function writeJson(response: ServerResponse, status: number, body: unknown) {
   response.end(JSON.stringify(body));
 }
 
-async function readJson(request: IncomingMessage): Promise<unknown> {
+async function readJson(request) {
   let body = "";
   for await (const chunk of request) {
     body += String(chunk);
@@ -36,16 +17,53 @@ async function readJson(request: IncomingMessage): Promise<unknown> {
   return JSON.parse(body);
 }
 
-function isLiveInput(value: unknown): value is LiveDecisionInput {
+function isLiveInput(value) {
   if (!value || typeof value !== "object") return false;
-  const input = value as Partial<LiveDecisionInput>;
-  const validStage = input.stage === 1 || input.stage === 2;
-  const validTransaction = typeof input.transactionId === "string" && /^[a-z0-9-]{16,80}$/i.test(input.transactionId);
-  const validChoice = input.stage === 1 || (input.stage === 2 && input.humanChoice === "preserve_brand");
+  const validStage = value.stage === 1 || value.stage === 2;
+  const validTransaction = typeof value.transactionId === "string" && /^[a-z0-9-]{16,80}$/i.test(value.transactionId);
+  const validChoice = value.stage === 1 || (value.stage === 2 && value.humanChoice === "preserve_brand");
   return validStage && validTransaction && validChoice;
 }
 
-function snapshot(input: LiveDecisionInput) {
+function isShortString(value, maximum) {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= maximum;
+}
+
+function isStructuredRepairCandidate(value) {
+  if (!value || typeof value !== "object") return false;
+  return (
+    (value.action === "darken_cta" || value.action === "change_text_color") &&
+    isShortString(value.proposedChange, 180) &&
+    isShortString(value.expectedEffect, 180) &&
+    (value.risk === "low" || value.risk === "medium" || value.risk === "high") &&
+    typeof value.confidence === "number" &&
+    Number.isFinite(value.confidence) &&
+    value.confidence >= 0 &&
+    value.confidence <= 1 &&
+    isShortString(value.rationale, 280) &&
+    Array.isArray(value.constraints) &&
+    value.constraints.length > 0 &&
+    value.constraints.length <= 4 &&
+    value.constraints.every((constraint) => isShortString(constraint, 80))
+  );
+}
+
+const openaiCandidateSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["action", "proposedChange", "expectedEffect", "risk", "confidence", "rationale", "constraints"],
+  properties: {
+    action: { type: "string", enum: ["darken_cta", "change_text_color"] },
+    proposedChange: { type: "string" },
+    expectedEffect: { type: "string" },
+    risk: { type: "string", enum: ["low", "medium", "high"] },
+    confidence: { type: "number" },
+    rationale: { type: "string" },
+    constraints: { type: "array", items: { type: "string" } },
+  },
+};
+
+function snapshot(input) {
   return {
     accessibilityPass: Boolean(input.verification?.accessibilityPass),
     contrastRatio: input.verification?.contrastRatio ?? null,
@@ -55,7 +73,7 @@ function snapshot(input: LiveDecisionInput) {
   };
 }
 
-function planningPrompt(input: LiveDecisionInput) {
+function planningPrompt(input) {
   if (input.stage === 2) {
     return [
       "You are the bounded planning layer for ConstraintFix, a frontend repair demo.",
@@ -75,24 +93,15 @@ function planningPrompt(input: LiveDecisionInput) {
   ].join("\n");
 }
 
-function expectedAction(stage: LiveStage) {
+function expectedAction(stage) {
   return stage === 1 ? "darken_cta" : "change_text_color";
 }
 
-function isAllowedCandidate(candidate: unknown, stage: LiveStage): candidate is StructuredRepairCandidate {
+function isAllowedCandidate(candidate, stage) {
   return isStructuredRepairCandidate(candidate) && candidate.action === expectedAction(stage);
 }
 
-interface ResponsesApiBody {
-  output?: Array<{
-    content?: Array<{
-      type?: string;
-      text?: string;
-    }>;
-  }>;
-}
-
-function outputText(body: ResponsesApiBody) {
+function outputText(body) {
   for (const item of body.output ?? []) {
     for (const content of item.content ?? []) {
       if (content.type === "output_text" && typeof content.text === "string") return content.text;
@@ -101,7 +110,7 @@ function outputText(body: ResponsesApiBody) {
   return null;
 }
 
-async function requestCandidate(input: LiveDecisionInput) {
+async function requestCandidate(input) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 25_000);
   try {
@@ -134,13 +143,13 @@ async function requestCandidate(input: LiveDecisionInput) {
       throw { status: 502, message: "Live planning returned an invalid response." };
     }
 
-    const responseBody = await apiResponse.json() as ResponsesApiBody;
+    const responseBody = await apiResponse.json();
     const text = outputText(responseBody);
     if (!text) throw { status: 422, message: "Live planning returned an empty repair candidate." };
-    return JSON.parse(text) as unknown;
+    return JSON.parse(text);
   } catch (error) {
     if (error && typeof error === "object" && "status" in error && "message" in error) throw error;
-    if (error instanceof DOMException && error.name === "AbortError") {
+    if (error && typeof error === "object" && error.name === "AbortError") {
       throw { status: 503, message: "Live planning timed out." };
     }
     throw { status: 503, message: "Live planning service is temporarily unavailable." };
@@ -155,7 +164,7 @@ async function requestCandidate(input: LiveDecisionInput) {
  * verification locally. Requests are deliberately stateless so deployment
  * does not depend on memory surviving between Vercel function invocations.
  */
-export default async function handler(request: IncomingMessage, response: ServerResponse) {
+export default async function handler(request, response) {
   if (request.method !== "POST") {
     writeJson(response, 405, { error: "Method not allowed." });
     return;
@@ -187,8 +196,8 @@ export default async function handler(request: IncomingMessage, response: Server
       usedThread: false,
     });
   } catch (error) {
-    const publicError = error as { status?: number; message?: string };
-    writeJson(response, publicError.status ?? 502, { error: publicError.message ?? "Live planning returned an invalid response." });
+    const publicError = error;
+    writeJson(response, publicError?.status ?? 502, { error: publicError?.message ?? "Live planning returned an invalid response." });
   }
 }
 

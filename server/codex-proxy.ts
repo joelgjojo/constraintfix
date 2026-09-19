@@ -1,5 +1,6 @@
 import type { Plugin } from "vite";
-import decisionHandler from "../api/codex/decision";
+// @ts-expect-error The Vercel runtime handler intentionally stays plain JS.
+import decisionHandler from "../api/codex/decision.js";
 
 /** Makes the same server-only Responses API route available during `npm run dev`. */
 export function openaiDecisionProxy(): Plugin {
