@@ -11,7 +11,7 @@ interface DecisionCardProps {
 
 export function DecisionCard({ onPreserveBrand, onAllowChange, onReset, disabled = false }: DecisionCardProps) {
   return (
-    <BorderGlow className="decision-glow" glowColor="96, 165, 250" animated>
+    <BorderGlow className="decision-glow self-start" glowColor="96, 165, 250" animated>
     <section className="panel relative overflow-hidden border-0 bg-[#0b0e12] p-5">
       <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-amber-300/[0.04] blur-3xl" />
       <div className="relative">

@@ -22,7 +22,7 @@ export function ControlPanel({ phase, running, brandOverride = false, onStart, o
   return (
     <section className="panel relative overflow-hidden p-5">
       <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-blue-500/[0.07] blur-3xl" />
-      <div className="relative flex min-h-[242px] flex-col justify-between">
+      <div className="relative flex flex-col gap-6">
         <div>
           <div className="section-kicker">AGENT CONTROL</div>
           <div className="mt-2 flex items-center gap-2">
@@ -39,7 +39,7 @@ export function ControlPanel({ phase, running, brandOverride = false, onStart, o
           </div>
         </div>
 
-        <div className="mt-8 flex items-center gap-3">
+        <div className="flex items-center gap-3">
           {phase === "idle" ? (
             <LiquidMetalButton label="Start Repair" onClick={onStart} disabled={running} />
           ) : (

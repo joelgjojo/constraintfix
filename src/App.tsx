@@ -432,7 +432,7 @@ function App() {
           </div>
         </header>
 
-        <section className="grid gap-6 py-10 lg:grid-cols-[1fr_auto] lg:items-end">
+        <section className="grid gap-6 py-7 lg:grid-cols-[1fr_auto] lg:items-start lg:py-8">
           <div>
             <div className="section-kicker">NEXT-GEN PRODUCTIVITY & AUTOMATION</div>
             <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.055em] text-white sm:text-5xl lg:text-6xl">
@@ -465,7 +465,7 @@ function App() {
           {phase === "waiting_for_human" ? (
             <DecisionCard onPreserveBrand={preserveBrand} onAllowChange={allowChange} onReset={reset} disabled={running} />
           ) : (
-            <MagicBento className="min-w-0" enableStars enableSpotlight enableBorderGlow enableTilt={false} enableMagnetism={false} clickEffect={false} particleCount={7} glowColor="56, 189, 248">
+            <MagicBento className="min-w-0 self-start" enableStars enableSpotlight enableBorderGlow enableTilt={false} enableMagnetism={false} clickEffect={false} particleCount={7} glowColor="56, 189, 248">
               <ControlPanel phase={phase} running={running} brandOverride={brandOverride} onStart={startRepair} onReset={reset} />
             </MagicBento>
           )}
