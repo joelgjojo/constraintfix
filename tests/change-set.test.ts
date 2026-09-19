@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { acceptance, aggregateVerification, applyOperations, createChangeReceipt, files, initialFixtures, newTransaction, operationsFor, restoreBaseline, validOperations, type FixtureVerification } from '../src/transactions/change-set';
+import { acceptance, aggregateVerification, applyOperations, createChangeReceipt, createGateResult, files, initialFixtures, newTransaction, operationsFor, restoreBaseline, validOperations, type FixtureVerification } from '../src/transactions/change-set';
+import { DEFAULT_CONSTRAINT_CONTRACT } from '../src/constraints/contract';
 import { mockAgent } from '../src/agent/mock-agent';
 import { replayAgent } from '../src/agent/replay-agent';
 import { __testables as server } from '../api/codex/decision.js';
@@ -57,8 +58,19 @@ test('receipt aggregates actual audits, candidates, rollback and explicit except
     assert.equal(receipt.evaluation.restoredFixtures,3);assert.equal(receipt.evaluation.rejectedCandidates,1);
     assert.equal(receipt.evaluation.finalChecks,choice==='preserve_brand'?'9/9':'8/9');
     assert.equal(receipt.approvedExceptions.length,choice==='preserve_brand'?0:1);
+    assert.deepEqual(receipt.contract, DEFAULT_CONSTRAINT_CONTRACT);
+    assert.deepEqual(receipt.gateResult, choice === 'preserve_brand'
+      ? { decision:'ACCEPT',passedChecks:9,requiredChecks:9,failedChecks:0,approvedExceptionCount:0,recommendedExitCode:0 }
+      : { decision:'APPROVED_EXCEPTION',passedChecks:8,requiredChecks:9,failedChecks:1,approvedExceptionCount:1,recommendedExitCode:0 });
   }
   assert.throws(()=>createChangeReceipt(newTransaction('mock')));
+});
+test('rejected gate result is machine-readable and recommends a failing exit code', () => {
+  const failed = checks(); failed[0].brandPass=false; failed[1].layoutPass=false; failed[2].accessibilityPass=false;
+  assert.deepEqual(createGateResult(aggregateVerification(failed),'rejected'), {
+    decision:'REJECT',passedChecks:6,requiredChecks:9,failedChecks:3,approvedExceptionCount:0,recommendedExitCode:1,
+  });
+  assert.throws(() => createGateResult(aggregateVerification(failed),'approved_exception'));
 });
 test('MOCK and BUNDLED REPLAY produce validated multi-file proposals without fetching', async () => {
   const previous=globalThis.fetch;let calls=0;

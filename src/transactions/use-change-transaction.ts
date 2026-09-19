@@ -5,9 +5,10 @@ import { providerForMode } from '@/agent/provider';
 import { createOperationGate } from './interaction';
 import { acceptance, applyOperations, changeRequest, createChangeReceipt, failureList, initialFixtures, newTransaction, restoreBaseline, sourceLabel, type ChangeReceipt, type ChangeSetCandidate, type ChangeTransaction, type FixtureState, type PolicyChoice, type VerificationMatrix } from './change-set';
 import { verifyChangeSet } from '@/verification/change-set';
+import { cloneConstraintContract, DEFAULT_CONSTRAINT_CONTRACT, type ConstraintContract } from '@/constraints/contract';
 const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: AgentMode) {
+export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: AgentMode, configuredContract: ConstraintContract = DEFAULT_CONSTRAINT_CONTRACT) {
   const [fixtures, setFixtures] = useState(initialFixtures);
   const [phase, setPhase] = useState<AgentPhase>('idle');
   const [events, setEvents] = useState<AgentEvent[]>([]);
@@ -15,6 +16,7 @@ export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: Agen
   const [matrix, setMatrix] = useState<VerificationMatrix | null>(null);
   const [matrixLabel, setMatrixLabel] = useState('Awaiting browser measurements');
   const [receipt, setReceipt] = useState<ChangeReceipt | null>(null);
+  const [contract, setContract] = useState(() => cloneConstraintContract(configuredContract));
   const [running, setRunning] = useState(false);
   const gate = useRef(createOperationGate());
   const currentPhase = useRef<AgentPhase>('idle');
@@ -30,7 +32,7 @@ export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: Agen
   const measure = async (record: ChangeTransaction, kind: ChangeTransaction['audits'][number]['kind']) => {
     if (!root.current) throw new Error('Missing browser verification surface.');
     move('verifying');
-    const result = await verifyChangeSet(root.current);
+    const result = await verifyChangeSet(root.current, record.contract);
     record.audits.push({ kind, result });
     return result;
   };
@@ -61,8 +63,8 @@ export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: Agen
   const start = async () => {
     if (currentPhase.current !== 'idle' || !gate.current.tryAcquire()) return;
     setRunning(true);
-    const record = newTransaction(mode === 'live' ? 'openai_live' : mode === 'replay' ? 'bundled_replay' : 'mock');
-    setEvents([]); setReceipt(null); setMatrix(null); publish(record);
+    const record = newTransaction(mode === 'live' ? 'openai_live' : mode === 'replay' ? 'bundled_replay' : 'mock', configuredContract);
+    setContract(record.contract); setEvents([]); setReceipt(null); setMatrix(null); publish(record);
     try {
       await render(initialFixtures()); move('auditing');
       event('auditing', 'GOAL · three-file change request', 'Improve pricing and checkout while preserving accessibility, brand and mobile behavior.');
@@ -73,7 +75,7 @@ export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: Agen
       const baselineResult = await measure(record, 'baseline');
       if (!baselineResult.overallPass) throw new Error('Cannot apply a change set without a verified baseline.');
       record.baseline = baseline;
-      event('verifying', 'Verified baseline · 9/9', 'Accessible names, protected surfaces and all 375px containers verified.', 'success');
+      event('verifying', 'Verified baseline · 9/9', `Accessible names, protected surfaces and all ${record.contract.responsive.viewportWidth}px containers verified.`, 'success');
       const proposal = await decide(record, baselineResult);
       record.changeSet.candidates.push(proposal); publish(record);
       event('planning', `AGENT PROPOSAL · ${sourceLabel(proposal.source)}`, proposal.summary);
@@ -90,7 +92,7 @@ export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: Agen
       const form = result.fixtures.find(item => item.fixture === 'checkout-form')!;
       const formIssue = form.axeViolations[0];
       event('verifying', `ENVIRONMENTAL OBSERVATION · ${result.passed}/${result.total}`, `Pricing contrast ${pricing.contrastRatio.toFixed(2)}:1; brand ${pricing.brandColor}. Header ${header.scrollWidth}px > ${header.width}px. Form axe ${formIssue?.id ?? 'none'} · ${formIssue?.impact ?? 'none'} · ${formIssue?.nodes ?? 0} node.`, 'warning');
-      event('conflict', 'DETERMINISTIC FAILURE · CHANGE SET REJECTED', failureList(result).join(' · '), 'danger');
+      event('conflict', 'DETERMINISTIC FAILURE · CHANGE SET REJECTED', failureList(result, record.contract).join(' · '), 'danger');
       await pause(1600);
       event('replanning', 'ROLLING BACK 3-FILE CHANGE SET', 'Restoring one verified snapshot atomically; no partial acceptance.', 'warning');
       const restored = restoreBaseline(record); await render(restored);
@@ -127,7 +129,7 @@ export function useChangeTransaction(root: RefObject<HTMLDivElement>, mode: Agen
   };
   const reset = () => {
     if (gate.current.isLocked()) return;
-    setFixtures(initialFixtures()); move('idle'); setEvents([]); setTx(null); setMatrix(null); setMatrixLabel('Awaiting browser measurements'); setReceipt(null); setRunning(false);
+    setFixtures(initialFixtures()); setContract(cloneConstraintContract(configuredContract)); move('idle'); setEvents([]); setTx(null); setMatrix(null); setMatrixLabel('Awaiting browser measurements'); setReceipt(null); setRunning(false);
   };
-  return { fixtures, phase, events, tx, matrix, matrixLabel, receipt, running, start, resolve, reset };
+  return { fixtures, contract, phase, events, tx, matrix, matrixLabel, receipt, running, start, resolve, reset };
 }

@@ -840,10 +840,10 @@ button:focus-visible {
   }
 }
 
-/* Three independent 375px measurement surfaces never shrink with the shell. */
+/* The contract owns the width for all three independent measurement surfaces. */
 .fixture-grid { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .fixture-viewport-scroll { overflow-x: auto; padding: 16px 0; }
-.verification-surface { width: 375px; min-width: 375px; max-width: 375px; margin: 0 auto; overflow: hidden; background: #101419; }
+.verification-surface { width: var(--verification-width); min-width: var(--verification-width); max-width: var(--verification-width); margin: 0 auto; overflow: hidden; background: #101419; }
 .fixture-content { width: 100%; background: #101419; color: #f8fafc; }
 .verification-surface .pricing-card { max-width: none; padding: 20px; border-radius: 0; border: 0; }
 .verification-surface .pricing-card__price { margin-top: 20px; }
@@ -870,5 +870,5 @@ button:focus-visible {
 .receipt-step span { display: block; color: #64748b; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
 .receipt-step strong { display: block; margin-top: 6px; font-size: 12px; }
 .receipt-step p { margin-top: 6px; color: #94a3b8; font-size: 11px; line-height: 1.5; }
-@media (max-width: 1250px) { .fixture-grid { grid-template-columns: 1fr; } .fixture-grid article { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(375px, 2fr); align-items: start; } }
+@media (max-width: 1250px) { .fixture-grid { grid-template-columns: 1fr; } .fixture-grid article { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(var(--verification-width), 2fr); align-items: start; } }
 @media (max-width: 640px) { .fixture-grid article { display: block; } .contract-grid { grid-template-columns: 1fr 1fr; } .verification-table { font-size: 10px; } .verification-table th, .verification-table td { padding: 10px 4px; } }

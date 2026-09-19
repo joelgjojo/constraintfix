@@ -62,6 +62,12 @@ The 3×3 matrix groups semantics under Accessibility: axe `button-name` and `lab
 
 Providers return bounded operations and explanations. They do not return verifier outcomes. Acceptance is derived from live `axe-core` results, computed CTA styles, independent WCAG contrast math, and DOM geometry inside three actual 375px surfaces. The UI exposes the measured contrast, expected/actual brand color, container/scroll widths, axe rule, impact and affected-node count beneath the matrix.
 
+## Policy-as-code contract
+
+`src/constraints/contract.ts` is the single policy source for the contrast threshold, selected axe violation limit, protected brand token, verification viewport, overflow rule and autonomy modes. Every transaction deep-clones that `ConstraintContract` when it starts. The verification surfaces and deterministic verifier then consume the same transaction snapshot, so a later global policy change cannot alter an in-flight decision.
+
+Agent providers can propose only validated operations; they cannot change the contract or set verifier truth. Receipt v3 records the exact contract snapshot plus an explicit `gateResult` with its decision, passed/required/failed checks, approved-exception count and recommended exit code. This is machine-readable, CI-ready decision output. Connecting it to a real CI system remains future work, and the hackathon executor remains intentionally bounded to the three controlled fixtures.
+
 ## Architecture
 
 ```text
@@ -72,9 +78,10 @@ AgentProvider (BUNDLED REPLAY / MOCK / OPTIONAL LIVE)
   → axe + contrast math + computed token + DOM geometry
   → whole-change-set acceptance OR rejection + snapshot rollback
   → baseline re-verification → human policy → multi-file replan
-  → verification → receipt v2
+  → verification → receipt v3 with contract + gateResult
 ```
 
+- `src/constraints/contract.ts`: typed policy source snapshotted into every transaction and receipt.
 - `src/transactions/change-set.ts`: explicit ChangeSet, operations, transaction, acceptance policy, rollback and receipt aggregation.
 - `src/transactions/use-change-transaction.ts`: phase flow, operation locks, atomic render, audits, recovery, human decisions and reset.
 - `src/fixtures`: PricingCard, MobileHeader and CheckoutForm; local preview actions never navigate or charge.
@@ -85,7 +92,7 @@ AgentProvider (BUNDLED REPLAY / MOCK / OPTIONAL LIVE)
 
 Only allowlisted fixture/action combinations can execute. A malformed, partial, duplicated or out-of-policy operation set is rejected before any fixture changes. Reset clears candidates, receipt, matrix, events, user input and preview feedback. Synchronous operation locks block overlapping work. Unexpected render/audit/provider failures recover to the saved baseline when available and cannot produce an accepted receipt.
 
-Receipt schema v2 includes transaction/change-set IDs, request, source, files, candidate operations and measured outcomes, all five audits, restored state/proof, human policy, exceptions, final outcome and evaluation. A normal run has **2 attempts, 3 files, 18 candidate checks, 45 total measured checks** (including initial, baseline and rollback audits), 1 rejection, 1 rollback and 1 human decision.
+Receipt schema v3 includes transaction/change-set IDs, request, source, contract snapshot, machine-readable gate result, files, candidate operations and measured outcomes, all five audits, restored state/proof, human policy, exceptions, final outcome and evaluation. A normal run has **2 attempts, 3 files, 18 candidate checks, 45 total measured checks** (including initial, baseline and rollback audits), 1 rejection, 1 rollback and 1 human decision.
 
 ## Agent and Codex role
 
@@ -123,7 +130,7 @@ Bounded by design: Candidate A and B use the scenario's validated operation allo
 
 ## Tests
 
-`npm test` covers provider contracts plus multi-fixture operation validation, every atomic rejection gate, rollback isolation, receipt aggregation, the restricted exception path and network-free MOCK/BUNDLED REPLAY. Browser repeatability and production-preview findings are recorded in `docs/upgrade-validation.md`.
+`npm test` covers provider contracts plus multi-fixture operation validation, every atomic rejection gate, rollback isolation, receipt aggregation, the restricted exception path, mutable policy comparisons, transaction contract isolation and network-free MOCK/BUNDLED REPLAY. Browser repeatability and production-preview findings are recorded in `docs/upgrade-validation.md`.
 
 The submission also runs `npm run typecheck`, `npm run build`, a production preview, a clean-clone install, and repeated Preserve Brand / Allow Change browser runs.
 
@@ -147,4 +154,4 @@ The MVP has three controlled frontend fixtures and a fixed operation vocabulary.
 
 ## Future direction
 
-A GitHub/CI adapter could turn repository diffs into bounded change transactions, while policy-as-code contracts could supply organization-specific gates. Those adapters are future work; they are not represented as current functionality.
+A GitHub/CI adapter could turn repository diffs into bounded change transactions, and a contract loader could select organization-specific policy snapshots. Those adapters are future work; they are not represented as current functionality.

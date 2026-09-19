@@ -1,6 +1,7 @@
 import { ArrowRight, GitBranch, RotateCcw, ShieldAlert, Sparkles } from "lucide-react";
 import { BorderGlow } from "@/components/ui/border-glow";
 import { GradientButton } from "@/components/ui/gradient-button";
+import type { ConstraintContract } from "@/constraints/contract";
 
 interface DecisionCardProps {
   onPreserveBrand: () => void;
@@ -8,9 +9,10 @@ interface DecisionCardProps {
   onReset: () => void;
   disabled?: boolean;
   multiFile?: boolean;
+  contract: ConstraintContract;
 }
 
-export function DecisionCard({ onPreserveBrand, onAllowChange, onReset, disabled = false, multiFile = false }: DecisionCardProps) {
+export function DecisionCard({ onPreserveBrand, onAllowChange, onReset, contract, disabled = false, multiFile = false }: DecisionCardProps) {
   return (
     <BorderGlow className="decision-glow self-start" glowColor="96, 165, 250" animated>
     <section className="panel relative overflow-hidden border-0 bg-[#0b0e12] p-5">
@@ -21,13 +23,13 @@ export function DecisionCard({ onPreserveBrand, onAllowChange, onReset, disabled
         </div>
         <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-white">{multiFile ? "Three-file change set rejected. One policy decision." : "Candidate A passed WCAG, then failed the contract."}</h2>
         <p className="mt-2 max-w-xl text-xs leading-5 text-zinc-500">
-          {multiFile ? "Header overflow and the detached form label must be repaired either way. The pricing candidate remains readable but changed" : "It raised contrast by changing"} the protected CTA background from <span className="text-zinc-300">#60A5FA</span> to <span className="text-zinc-300">#2563EB</span>. ConstraintFix rejected and rolled it back; the next choice needs product judgment.
+          {multiFile ? "Header overflow and the detached form label must be repaired either way. The pricing candidate remains readable but changed" : "It raised contrast by changing"} the protected CTA background from <span className="text-zinc-300">{contract.brand.protectedPrimaryColor}</span> to <span className="text-zinc-300">#2563EB</span>. ConstraintFix rejected and rolled it back; the next choice needs product judgment.
         </p>
 
         {!multiFile && <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-bold tracking-[0.08em]">
           <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-300">A11Y PASS</span>
           <span className="rounded-full border border-rose-400/20 bg-rose-400/10 px-2.5 py-1 text-rose-300">BRAND FAIL</span>
-          <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-300">375PX LAYOUT PASS</span>
+          <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-300">{contract.responsive.viewportWidth}PX LAYOUT PASS</span>
           <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-zinc-500">ROLLBACK COMPLETE</span>
         </div>}
 
@@ -38,7 +40,7 @@ export function DecisionCard({ onPreserveBrand, onAllowChange, onReset, disabled
               <ArrowRight size={14} className="text-zinc-600" />
             </div>
             <div className="mt-4 text-sm font-semibold text-zinc-100">Preserve brand</div>
-            <div className="mt-1 text-[11px] leading-5 text-zinc-500">Keep #60A5FA. Replan all files: foreground contrast, mobile navigation and input semantics.</div>
+            <div className="mt-1 text-[11px] leading-5 text-zinc-500">Keep {contract.brand.protectedPrimaryColor}. Replan all files: foreground contrast, mobile navigation and input semantics.</div>
             <GradientButton disabled={disabled} onClick={onPreserveBrand} className="mt-4 w-full min-w-0">Preserve Brand</GradientButton>
           </div>
 

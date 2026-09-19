@@ -1,4 +1,5 @@
 import type { DecisionSource, VerificationResult } from '@/agent/types';
+import { cloneConstraintContract, DEFAULT_CONSTRAINT_CONTRACT, type ConstraintContract } from '@/constraints/contract';
 
 export const files = [
   { id: 'pricing-card', name: 'PricingCard.tsx', short: 'Pricing' },
@@ -51,6 +52,7 @@ export interface ChangeTransaction {
   id: string;
   startedAt: string;
   completedAt?: string;
+  contract: ConstraintContract;
   changeSet: ChangeSet;
   status: 'running' | 'rejected' | 'waiting_for_human' | 'accepted' | 'approved_exception' | 'failed';
   baseline?: FixtureState;
@@ -98,30 +100,53 @@ export function restoreBaseline(tx: ChangeTransaction): FixtureState {
   if (!tx.baseline) throw new Error('No verified baseline to restore.');
   return { ...tx.baseline };
 }
-export function newTransaction(source: DecisionSource): ChangeTransaction {
+export function newTransaction(source: DecisionSource, contract: ConstraintContract = DEFAULT_CONSTRAINT_CONTRACT): ChangeTransaction {
   const id = crypto.randomUUID();
-  return { id, startedAt: new Date().toISOString(), status: 'running', changeSet: { id: `CS-${id.slice(0, 8)}`, request: changeRequest, source, files, candidates: [] }, audits: [], rollbackCount: 0, modelCalls: 0, notices: [] };
+  return { id, startedAt: new Date().toISOString(), contract: cloneConstraintContract(contract), status: 'running', changeSet: { id: `CS-${id.slice(0, 8)}`, request: changeRequest, source, files, candidates: [] }, audits: [], rollbackCount: 0, modelCalls: 0, notices: [] };
 }
-export function failureList(matrix: VerificationMatrix): string[] {
-  return matrix.fixtures.flatMap(r => [!r.accessibilityPass && `Accessibility / ${r.fixture}`, !r.brandPass && `Brand / ${r.fixture}`, !r.layoutPass && `375px layout / ${r.fixture}`].filter((v): v is string => Boolean(v)));
+export function failureList(matrix: VerificationMatrix, contract: ConstraintContract): string[] {
+  return matrix.fixtures.flatMap(r => [!r.accessibilityPass && `Accessibility / ${r.fixture}`, !r.brandPass && `Brand / ${r.fixture}`, !r.layoutPass && `${contract.responsive.viewportWidth}px layout / ${r.fixture}`].filter((v): v is string => Boolean(v)));
+}
+export interface GateResult {
+  decision: 'ACCEPT' | 'REJECT' | 'APPROVED_EXCEPTION';
+  passedChecks: number;
+  requiredChecks: number;
+  failedChecks: number;
+  approvedExceptionCount: number;
+  recommendedExitCode: 0 | 1;
+}
+export function createGateResult(matrix: VerificationMatrix, outcome: 'accepted' | 'rejected' | 'approved_exception', approvedExceptionCount = 0): GateResult {
+  if (outcome === 'approved_exception' && approvedExceptionCount < 1) throw new Error('An approved-exception gate requires at least one recorded exception.');
+  const decision = outcome === 'accepted' ? 'ACCEPT' : outcome === 'approved_exception' ? 'APPROVED_EXCEPTION' : 'REJECT';
+  return {
+    decision,
+    passedChecks: matrix.passed,
+    requiredChecks: matrix.total,
+    failedChecks: matrix.total - matrix.passed,
+    approvedExceptionCount,
+    recommendedExitCode: outcome === 'rejected' ? 1 : 0,
+  };
 }
 export function createChangeReceipt(tx: ChangeTransaction) {
   if (!['accepted', 'approved_exception'].includes(tx.status) || !tx.completedAt) throw new Error('Cannot receipt an unfinished change set.');
   const final = tx.audits.at(-1)!.result;
   if (acceptance(final, tx.humanChoice) !== tx.status) throw new Error('Receipt outcome must match deterministic proof.');
+  const approvedExceptions = tx.status === 'approved_exception' ? [{ fixture: 'pricing-card', rule: 'protected-brand', expected: tx.contract.brand.protectedPrimaryColor, actual: final.fixtures.find(r => r.fixture === 'pricing-card')!.brandColor }] : [];
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     receiptId: `CF-${tx.id.slice(0, 8)}`,
     transactionId: tx.id,
     changeRequest: tx.changeSet.request,
     generatedAt: tx.completedAt,
     source: tx.changeSet.source,
+    contract: cloneConstraintContract(tx.contract),
     filesTouched: tx.changeSet.files.map(f => f.name),
     candidateHistory: tx.changeSet.candidates,
     audits: tx.audits,
     rollback: tx.rollback,
     humanDecision: tx.humanChoice,
-    approvedExceptions: tx.status === 'approved_exception' ? [{ fixture: 'pricing-card', rule: 'protected-brand', expected: '#60A5FA', actual: final.fixtures.find(r => r.fixture === 'pricing-card')!.brandColor }] : [],
+    approvedExceptions,
+    gateResult: createGateResult(final, tx.status, approvedExceptions.length),
     finalVerification: final,
     outcome: tx.status,
     evaluation: {

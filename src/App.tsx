@@ -10,6 +10,7 @@ import { DecisionCard } from '@/components/decision-card';
 import { ChangeSetPreview } from '@/components/change-set-preview';
 import { VerificationMatrix } from '@/components/verification-matrix';
 import { ChangeSetReceipt, ProposedOperations, TransactionTrace } from '@/components/change-set-report';
+import { DEFAULT_CONSTRAINT_CONTRACT } from '@/constraints/contract';
 const colors = ['#000000', '#080445', '#003cff'];
 const modeLabel: Record<AgentMode, string> = { replay: 'Bundled replay', mock: 'Mock', live: 'Optional live connector' };
 
@@ -18,7 +19,7 @@ export default function App() {
   const [mode, setMode] = useState<AgentMode>('replay');
   const [resetKey, setResetKey] = useState(0);
   const root = useRef<HTMLDivElement>(null);
-  const run = useChangeTransaction(root, mode);
+  const run = useChangeTransaction(root, mode, DEFAULT_CONSTRAINT_CONTRACT);
   const reset = () => { if (run.running) return; run.reset(); setResetKey(k => k + 1); };
   const exception = run.tx?.status === 'approved_exception';
   const label = run.phase === 'waiting_for_human' ? 'Baseline restored · rejected proposal retained below' : run.phase === 'complete' ? exception ? 'Replan rendered · explicit brand exception' : 'Replan rendered · all three files verified' : run.phase === 'idle' ? 'AI Checkout Redesign' : 'Inspecting the whole change set';
@@ -31,11 +32,11 @@ export default function App() {
         <MagicBento enableTilt={false} enableMagnetism={false} clickEffect={false} particleCount={5} glowColor="96, 165, 250"><section className="panel h-full p-5"><div className="section-kicker">AI CHANGE REQUEST · CS-CHECKOUT</div><h2 className="mt-3 text-lg font-medium leading-7">“{changeRequest}”</h2><div className="mt-4 flex flex-wrap gap-2"><span className="status-pill">Agent proposal · {modeLabel[mode]}</span><span className="status-pill">3 files</span><span className="status-pill">9 measured gates</span><span className="status-pill">Atomic transaction</span></div><p className="mt-3 text-xs text-slate-400">Controlled browser demonstration · structured operations · no repository import</p></section></MagicBento>
         <ControlPanel phase={run.phase} running={run.running} brandOverride={exception} onStart={run.start} onReset={reset} />
       </section>
-      <section className="panel my-4 p-5" aria-label="Organization constraint contract"><div className="section-kicker">PERSISTENT ORGANIZATION CONTRACT · CF-CONTRACT-01</div><div className="contract-grid mt-4"><div><strong>Accessibility</strong><p>AA contrast ≥ 4.5:1 on CTAs<br />Zero violations in selected axe rules</p></div><div><strong>Protected brand</strong><p>--brand-primary <span className="text-sky-300">#60A5FA</span><br />All three action surfaces</p></div><div><strong>Responsive</strong><p>True 375px surfaces<br />No horizontal overflow</p></div><div><strong>Semantics</strong><p>Named buttons<br />Associated input labels</p></div></div><p className="mt-4 border-t border-white/10 pt-3 text-xs text-slate-400">Autonomy: semantic repair <b className="text-emerald-300">AUTO</b> · protected / ambiguous policy <b className="text-amber-300">ASK</b> · cross-file regression <b className="text-rose-300">REJECT</b></p></section>
-      <ChangeSetPreview key={resetKey} resetKey={String(resetKey)} state={run.fixtures} rootRef={root} label={label} />
-      <section className="mt-4 grid gap-4 lg:grid-cols-[1.5fr_1fr]"><div className="space-y-4"><VerificationMatrix result={run.matrix} label={run.matrixLabel} exception={exception} />
+      <section className="panel my-4 p-5" aria-label="Organization constraint contract"><div className="section-kicker">POLICY SOURCE · CONSTRAINT CONTRACT V{run.contract.version}</div><div className="contract-grid mt-4"><div><strong>Accessibility</strong><p>Contrast ≥ {run.contract.accessibility.minimumContrast}:1 on CTAs<br />Selected axe violations ≤ {run.contract.accessibility.maxSelectedViolations}</p></div><div><strong>Protected brand</strong><p>--brand-primary <span className="text-sky-300">{run.contract.brand.protectedPrimaryColor}</span><br />All three action surfaces</p></div><div><strong>Responsive</strong><p>True {run.contract.responsive.viewportWidth}px surfaces<br />{run.contract.responsive.allowHorizontalOverflow ? 'Horizontal overflow allowed' : 'No horizontal overflow'}</p></div><div><strong>Semantics</strong><p>Named buttons<br />Associated input labels</p></div></div><p className="mt-4 border-t border-white/10 pt-3 text-xs text-slate-400">Autonomy: semantic repair <b className="text-emerald-300">{run.contract.autonomy.lowRiskRepair.toUpperCase()}</b> · protected / ambiguous policy <b className="text-amber-300">{run.contract.autonomy.protectedConstraintChange.toUpperCase()}</b> · deterministic verifier <b className="text-rose-300">AUTHORITATIVE</b></p></section>
+      <ChangeSetPreview key={resetKey} resetKey={String(resetKey)} state={run.fixtures} rootRef={root} label={label} contract={run.contract} />
+      <section className="mt-4 grid gap-4 lg:grid-cols-[1.5fr_1fr]"><div className="space-y-4"><VerificationMatrix result={run.matrix} label={run.matrixLabel} contract={run.contract} exception={exception} />
       {run.tx?.rollback && <div className="panel p-4" data-testid="rollback-proof"><div className="section-kicker">ATOMIC ROLLBACK PROOF</div><p className={`mt-2 text-sm ${run.tx.rollback.verified ? 'text-emerald-300' : 'text-rose-300'}`}>{run.tx.rollback.verified ? '3 fixtures restored · baseline re-verified' : 'Rollback verification failed'} · {run.tx.rollback.result.passed}/{run.tx.rollback.result.total}</p><p className="mt-1 text-xs text-slate-400">Every surface measured again after restoring the saved React state snapshot.</p></div>}
-      {run.phase === 'waiting_for_human' && <DecisionCard onPreserveBrand={() => run.resolve('preserve_brand')} onAllowChange={() => run.resolve('allow_change')} onReset={reset} disabled={run.running} multiFile />}
+      {run.phase === 'waiting_for_human' && <DecisionCard onPreserveBrand={() => run.resolve('preserve_brand')} onAllowChange={() => run.resolve('allow_change')} onReset={reset} contract={run.contract} disabled={run.running} multiFile />}
       </div><ProposedOperations tx={run.tx} /></section>
       {run.receipt && <div className="mt-4"><ChangeSetReceipt receipt={run.receipt} /></div>}
       <div className="mt-4"><TransactionTrace events={run.events} tx={run.tx} /></div>
