@@ -10,7 +10,7 @@ import type { AgentProvider } from "../src/agent/types";
 import { createConstraintReceipt, createRepairTransaction, serializeConstraintReceipt, updateCandidate, updateTransaction } from "../src/transactions/contract";
 import { createIdleDemoState, createOperationGate } from "../src/transactions/interaction";
 import type { VerificationSnapshot } from "../src/transactions/types";
-import { __testables as serverTestables } from "../server/codex-proxy";
+import { __testables as serverTestables } from "../api/codex/decision";
 
 function installBrowserStorage() {
   const values = new Map<string, string>();
@@ -29,7 +29,6 @@ function installBrowserStorage() {
 
 beforeEach(() => {
   installBrowserStorage();
-  serverTestables.sessions.clear();
 });
 
 const initialVerification: VerificationSnapshot = {
@@ -66,21 +65,21 @@ describe("structured repair candidates", () => {
       action: "darken_cta",
       candidate: rejectionCandidate,
       modelCalls: 1,
-      usedThread: true,
+      usedThread: false,
     }), true);
     assert.equal(clientTestables.isServerDecision({
       type: "apply_patch",
       action: "inject_css",
       candidate: rejectionCandidate,
       modelCalls: 1,
-      usedThread: true,
+      usedThread: false,
     }), false);
     assert.equal(clientTestables.isServerDecision({
       type: "apply_patch",
       action: "change_text_color",
       candidate: rejectionCandidate,
       modelCalls: 1,
-      usedThread: true,
+      usedThread: false,
     }), false);
   });
 });
@@ -97,29 +96,29 @@ describe("fallback and replay", () => {
     };
     const decision = await withDemoFallback(unavailable, fallback).decide({ phase: "planning", stage: 1, verification: null, transactionId: "abcde-12345-fghij" });
     assert.equal(decision.source, "codex_replay");
-    assert.match(decision.fallbackNotice ?? "", /Codex Live/);
+    assert.match(decision.fallbackNotice ?? "", /OpenAI Live/);
   });
 
-  it("replays a captured valid Codex candidate without a network call", async () => {
+  it("replays a captured valid OpenAI candidate without a network call", async () => {
     captureLiveCandidate(preserveBrandCandidate);
     const decision = await replayAgent.decide({ phase: "planning", stage: 1, verification: null, transactionId: "abcde-12345-fghij" });
     assert.equal(decision.source, "codex_replay");
     assert.equal(decision.action, "change_text_color");
-    assert.match(decision.reason, /validated Codex candidate/);
+    assert.match(decision.reason, /validated OpenAI candidate/);
   });
 });
 
-describe("server live-thread guard", () => {
-  it("accepts only the initial turn or the same-thread preserve-brand replan", () => {
+describe("server live-input guard", () => {
+  it("accepts only the initial turn or a preserve-brand replan", () => {
     assert.equal(serverTestables.isLiveInput({ transactionId: "12345678-abcd-efgh-ijkl-123456789abc", stage: 1, verification: null }), true);
     assert.equal(serverTestables.isLiveInput({ transactionId: "12345678-abcd-efgh-ijkl-123456789abc", stage: 2, verification: null, humanChoice: "preserve_brand" }), true);
     assert.equal(serverTestables.isLiveInput({ transactionId: "12345678-abcd-efgh-ijkl-123456789abc", stage: 2, verification: null }), false);
   });
 
-  it("prunes expired thread sessions so a replay fallback cannot accidentally reuse one", () => {
-    serverTestables.sessions.set("expired-thread-session", { thread: {} as never, calls: 1, expiresAt: 10 });
-    serverTestables.pruneSessions(11);
-    assert.equal(serverTestables.sessions.size, 0);
+  it("requires the stage-specific action from a structured live candidate", () => {
+    assert.equal(serverTestables.isAllowedCandidate(rejectionCandidate, 1), true);
+    assert.equal(serverTestables.isAllowedCandidate(rejectionCandidate, 2), false);
+    assert.equal(serverTestables.isAllowedCandidate(preserveBrandCandidate, 2), true);
   });
 });
 

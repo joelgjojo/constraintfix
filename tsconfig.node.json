@@ -15,5 +15,5 @@
     "strict": true,
     "noEmit": true
   },
-  "include": ["vite.config.ts", "server", "src/agent/candidate-schema.ts", "src/agent/types.ts"]
+  "include": ["vite.config.ts", "server", "api", "src/agent/candidate-schema.ts", "src/agent/types.ts"]
 }

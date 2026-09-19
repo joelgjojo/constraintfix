@@ -11,7 +11,6 @@
     "test": "TSX_TSCONFIG_PATH=tsconfig.app.json node --import tsx --test tests/agent-contract.test.ts"
   },
   "dependencies": {
-    "@openai/codex-sdk": "^0.155.1",
     "@paper-design/shaders": "0.0.81",
     "@radix-ui/react-slot": "^1.1.2",
     "axe-core": "^4.10.2",
@@ -20,6 +19,7 @@
     "gsap": "^3.15.0",
     "lucide-react": "^0.468.0",
     "ogl": "^1.0.11",
+    "openai": "^7.20.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.6.0"

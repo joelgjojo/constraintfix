@@ -20,4 +20,4 @@ export const agentProvider: AgentProvider = useCodexLive
   ? withDemoFallback(codexAgent, replayAgent)
   : configuredMode === "replay" ? replayAgent : mockAgent;
 
-export const requestedProvider = useCodexLive ? "CODEX LIVE · replay fallback" : configuredMode === "replay" ? "CODEX REPLAY" : "MOCK";
+export const requestedProvider = useCodexLive ? "OPENAI LIVE · replay fallback" : configuredMode === "replay" ? "OPENAI REPLAY" : "MOCK";

@@ -177,11 +177,11 @@ function App() {
       currentTransaction = { ...currentTransaction, source: secondDecision.source };
       currentTransaction = {
         ...currentTransaction,
-        modelCalls: Math.max(currentTransaction.modelCalls, secondDecision.modelCalls ?? 0),
+        modelCalls: currentTransaction.modelCalls + (secondDecision.source === "codex_live" ? secondDecision.modelCalls ?? 0 : 0),
         liveThreadActive: Boolean(secondDecision.usedThread && secondDecision.source === "codex_live"),
       };
       setTransaction(currentTransaction);
-      addEvent("planning", `${secondDecision.source === "codex_live" ? "CODEX LIVE" : secondDecision.source === "codex_replay" ? "CODEX REPLAY" : "MOCK"} Candidate A started`, secondDecision.reason);
+      addEvent("planning", `${secondDecision.source === "codex_live" ? "OPENAI LIVE" : secondDecision.source === "codex_replay" ? "OPENAI REPLAY" : "MOCK"} Candidate A started`, secondDecision.reason);
 
       if (secondDecision.action === "change_text_color") {
         setPhase("patching");
@@ -259,8 +259,8 @@ function App() {
       addEvent(
         "waiting_for_human",
         "Autonomy paused for product judgment",
-        currentTransaction.liveThreadActive
-          ? "The candidate was rejected by the protected-token gate. Preserve Brand continues the same Codex thread with this machine feedback."
+        secondDecision.source === "codex_live"
+          ? "The candidate was rejected by the protected-token gate. Preserve Brand sends this machine feedback to the bounded OpenAI replan."
           : "The candidate was rejected by the protected-token gate. Preserve Brand applies the verified replan without bypassing the contract.",
         "warning",
       );
@@ -296,7 +296,7 @@ function App() {
       currentTransaction = {
         ...currentTransaction,
         source: decision.source,
-        modelCalls: Math.max(currentTransaction.modelCalls, decision.modelCalls ?? 0),
+        modelCalls: currentTransaction.modelCalls + (decision.source === "codex_live" ? decision.modelCalls ?? 0 : 0),
         candidates: currentTransaction.candidates.map((candidate) => candidate.id === "candidate-b" ? { ...candidate, source: decision.source, note: decision.reason } : candidate),
       };
       setTransaction(currentTransaction);

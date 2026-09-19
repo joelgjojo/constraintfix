@@ -25,7 +25,7 @@ export function captureLiveCandidate(candidate: StructuredRepairCandidate | unde
 }
 
 export const replayAgent: AgentProvider = {
-  label: "CODEX REPLAY · verified response",
+  label: "OPENAI REPLAY · verified response",
   async decide(input: AgentDecisionInput): Promise<RepairDecision> {
     const decision = await mockAgent.decide(input);
     const recorded = input.stage === 1 ? storedCandidate() : null;
@@ -38,7 +38,7 @@ export const replayAgent: AgentProvider = {
       source: "codex_replay",
       candidate,
       reason: recorded
-        ? `Replayed a validated Codex candidate: ${candidate.rationale}`
+        ? `Replayed a validated OpenAI candidate: ${candidate.rationale}`
         : `Replayed the verified demo candidate: ${decision.reason}`,
     };
   },

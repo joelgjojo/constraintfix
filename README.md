@@ -34,7 +34,7 @@ npm run preview
 
 **Allow Change** is a real approved-exception path. It records the protected-token override and never calls it a brand pass.
 
-In live mode, Codex may choose the foreground repair as its first candidate. If deterministic verification passes, ConstraintFix accepts it immediately instead of inventing the mock conflict.
+Live mode keeps the same judge-proof sequence: OpenAI produces a structured rationale for the policy-bounded contrast candidate, the browser rejects the protected-token change, and a Preserve Brand replan proposes the foreground repair. The model cannot skip the conflict or its deterministic verification.
 
 ## What is real
 
@@ -52,7 +52,7 @@ The real executor maps only four known actions to fixture stages: add an accessi
 ## Agent architecture
 
 ```text
-AgentProvider: MOCK | CODEX LIVE | CODEX REPLAY
+AgentProvider: MOCK | OPENAI LIVE | OPENAI REPLAY
                   ↓ validated structured candidate
 Bounded fixture executor
                   ↓ browser render
@@ -65,11 +65,11 @@ constraint receipt
 
 `src/agent/types.ts` is the stable provider boundary. `src/agent/candidate-schema.ts` validates every structured candidate at runtime. `src/agent/provider.ts` chooses the mode, and `src/agent/fallback-agent.ts` sends a failed live request to replay.
 
-The Vite server adapter at `server/codex-proxy.ts` creates a server-only `@openai/codex-sdk` thread in `read-only` sandbox mode with approvals and network disabled. A live transaction has at most two model turns: the initial proposal, then a **Preserve Brand** replan on the same thread with machine verification feedback. The browser receives no key, raw thread ID, or tool output.
+`api/codex/decision.ts` is a Vercel Node function backed by the official OpenAI Responses API. It accepts only the two policy-approved planning stages, requests a strict JSON schema, enforces the expected mapped action, and returns no secret, prompt, or raw model output. It is stateless by design, so a deployment does not depend on a serverless function retaining memory between the candidate and replan requests. `server/codex-proxy.ts` mounts that same handler for local Vite development.
 
 Reusable shell controls stay in `src/components/ui`. The header uses the supplied ConstraintFix logo; `LiquidMetalButton` is the primary Start Repair CTA; `GradientButton` handles the human decision; and `MagicBento` gives the otherwise static Contract and Agent Control panels bounded hover effects. The OGL Ferrofluid background uses `#000000`, `#080445`, and `#003cff`. The deliberately broken fixture remains isolated in `src/fixtures/pricing-card.tsx`; the bento wrapper never encloses it.
 
-## Modes and live setup
+## Modes and local live setup
 
 Set one mode in `.env.local`, then restart the development server.
 
@@ -81,13 +81,29 @@ VITE_AGENT_MODE=mock
 # in this browser session when one exists, otherwise uses the audited demo fixture
 VITE_AGENT_MODE=replay
 
-# live: calls the server-only Codex SDK after the user presses Start Repair
+# live: calls the server-only OpenAI Responses API after Start Repair
 VITE_AGENT_MODE=live
 
-# optional; do not prefix with VITE_. If absent, local Codex CLI auth is used.
-CODEX_API_KEY=
+# required for live mode; do not prefix with VITE_.
+OPENAI_API_KEY=
+
+# optional; defaults to gpt-5-mini
+OPENAI_MODEL=gpt-5-mini
 ```
 
-Live requests are not retried automatically. A timeout, missing authentication, invalid schema, or unavailable SDK results in the visible **CODEX REPLAY** fallback. The fallback is deterministic and the verifier still runs normally. A successful live candidate is captured in `sessionStorage` only after client validation; replay never makes a network request.
+Live requests are not retried automatically. A timeout, missing authentication, invalid schema, rate limit, or unavailable API results in the visible **OPENAI REPLAY** fallback. The fallback is deterministic and the verifier still runs normally. A successful live candidate is captured in `sessionStorage` only after client validation; replay never makes a network request.
 
-The Codex SDK is installed as `@openai/codex-sdk`. Its documented server-side API uses `new Codex()`, `startThread()`, and repeated `thread.run()` calls to continue the same thread. This app constrains that capability to structured repair proposals and keeps final verification outside the model.
+## Deploy to Vercel
+
+Vercel detects the Vite app and the `api/codex/decision.ts` server function automatically. Import this repository, keep the repository root as the project root, and add these environment variables in **Project Settings → Environment Variables** for Production and Preview:
+
+```dotenv
+VITE_AGENT_MODE=live
+OPENAI_API_KEY=your_server_only_key
+# optional
+OPENAI_MODEL=gpt-5-mini
+```
+
+Do not create a `VITE_OPENAI_API_KEY` variable: any variable with that prefix is included in the browser bundle. Deploy after the variables are saved. The browser header will show **OPENAI LIVE · replay fallback**. If the function is unavailable, the UI stays demo-safe by visibly switching to **OPENAI REPLAY** while deterministic verification continues.
+
+The [OpenAI JavaScript quickstart](https://platform.openai.com/docs/quickstart/make-your-first-api-request) documents the server-side SDK and `OPENAI_API_KEY` convention. ConstraintFix calls the Responses API with `store: false`, strict JSON-schema output, a 25-second server timeout, and no automatic model retry. The API key is read only by the server function; it is never sent to the browser.

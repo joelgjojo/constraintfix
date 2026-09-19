@@ -21,17 +21,17 @@ function isServerDecision(value: unknown): value is ServerDecision {
     typeof decision.modelCalls === "number" &&
     decision.modelCalls >= 1 &&
     decision.modelCalls <= 2 &&
-    decision.usedThread === true
+    typeof decision.usedThread === "boolean"
   );
 }
 
 export const __testables = { isServerDecision };
 
 export const codexAgent: AgentProvider = {
-  label: "CODEX LIVE · structured candidate",
+  label: "OPENAI LIVE · structured candidate",
   async decide(input: AgentDecisionInput): Promise<RepairDecision> {
     if (!input.transactionId || (input.stage !== 1 && input.humanChoice !== "preserve_brand")) {
-      throw new Error("Live Codex decisions require a repair transaction and a supported planning stage.");
+      throw new Error("Live OpenAI decisions require a repair transaction and a supported planning stage.");
     }
 
     const controller = new AbortController();
@@ -43,9 +43,9 @@ export const codexAgent: AgentProvider = {
         body: JSON.stringify(input),
         signal: controller.signal,
       });
-      if (!response.ok) throw new Error(`Codex decision endpoint returned ${response.status}.`);
+      if (!response.ok) throw new Error(`OpenAI decision endpoint returned ${response.status}.`);
       const decision: unknown = await response.json();
-      if (!isServerDecision(decision)) throw new Error("Codex returned an invalid structured repair candidate.");
+      if (!isServerDecision(decision)) throw new Error("OpenAI returned an invalid structured repair candidate.");
 
       const candidate = decision.candidate;
       captureLiveCandidate(candidate);
