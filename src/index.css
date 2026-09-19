@@ -360,6 +360,122 @@ button {
   font-weight: 650;
 }
 
+.agent-signal {
+  width: min(100%, 356px);
+  justify-self: end;
+  border-radius: 18px;
+  background: rgba(96, 165, 250, 0.3);
+  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.24), 0 22px 60px rgba(7, 25, 48, 0.36);
+}
+
+.agent-signal::before {
+  opacity: 0.48;
+}
+
+.agent-signal__surface {
+  position: relative;
+  min-height: 216px;
+  overflow: hidden;
+  border-radius: inherit;
+  background:
+    linear-gradient(138deg, rgba(10, 21, 36, 0.98), rgba(9, 17, 29, 0.92) 62%, rgba(4, 13, 25, 0.95)),
+    #08111e;
+}
+
+.agent-signal__surface::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(7, 16, 29, 0.56), transparent 65%);
+}
+
+.agent-signal__content {
+  position: relative;
+  z-index: 1;
+  padding: 17px 18px;
+}
+
+.agent-signal__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.agent-signal__phase {
+  max-width: 112px;
+  overflow: hidden;
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 999px;
+  background: rgba(96, 165, 250, 0.1);
+  padding: 4px 7px;
+  color: #bae6fd;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.agent-signal__headline {
+  display: inline;
+  color: #f0f9ff;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.agent-signal .lattice-loader {
+  color: #b5d9f7;
+}
+
+.agent-signal .lattice-loader--working .lattice-loader__grid i,
+.agent-signal .lattice-loader--idle .lattice-loader__grid i {
+  background: #60a5fa;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+}
+
+.agent-signal .lattice-loader--idle .lattice-loader__grid i:nth-child(1),
+.agent-signal .lattice-loader--idle .lattice-loader__grid i:nth-child(5),
+.agent-signal .lattice-loader--idle .lattice-loader__grid i:nth-child(9) {
+  opacity: 0.85;
+}
+
+.agent-signal__nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 15px;
+}
+
+.agent-signal__nodes span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(186, 230, 253, 0.1);
+  border-radius: 999px;
+  background: rgba(15, 33, 54, 0.72);
+  padding: 4px 7px;
+  color: #94a3b8;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
+.agent-signal__nodes svg { color: #7dd3fc; }
+
+.agent-signal__provider {
+  margin-top: 12px;
+  color: rgba(148, 163, 184, 0.68);
+  font-size: 9px;
+}
+
+@media (max-width: 1023px) {
+  .agent-signal { justify-self: stretch; }
+}
+
 @property --pos-x {
   syntax: '<percentage>';
   initial-value: 11.14%;

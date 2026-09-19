@@ -4,6 +4,7 @@ import { Code2, Cpu, ShieldCheck } from "lucide-react";
 import { agentProvider, requestedProvider } from "@/agent/provider";
 import type { AgentEvent, AgentPhase, VerificationResult } from "@/agent/types";
 import constraintFixLogo from "@/assets/constraintfix-logo.png";
+import { AgentSignal } from "@/components/agent-signal";
 import { AgentTimeline } from "@/components/agent-timeline";
 import { ConstraintPanel } from "@/components/constraint-panel";
 import { ControlPanel } from "@/components/control-panel";
@@ -242,10 +243,13 @@ function App() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <div className="metric-card"><Cpu size={14} /><span>Reason</span><strong>{requestedProvider}</strong></div>
-            <div className="metric-card"><Code2 size={14} /><span>Execute</span><strong>Live</strong></div>
-            <div className="metric-card"><ShieldCheck size={14} /><span>Verify</span><strong>Live</strong></div>
+          <div className="grid gap-2">
+            <AgentSignal phase={phase} provider={requestedProvider} />
+            <div className="grid grid-cols-3 gap-2">
+              <div className="metric-card"><Cpu size={14} /><span>Reason</span><strong>{requestedProvider}</strong></div>
+              <div className="metric-card"><Code2 size={14} /><span>Execute</span><strong>Live</strong></div>
+              <div className="metric-card"><ShieldCheck size={14} /><span>Verify</span><strong>Live</strong></div>
+            </div>
           </div>
         </section>
 
