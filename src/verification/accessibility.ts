@@ -1,8 +1,7 @@
-import type { AxeResults } from "axe-core";
+import axe, { type AxeResults } from "axe-core";
 import type { AccessibilityIssue } from "@/agent/types";
 
 export async function runAxeAudit(root: HTMLElement): Promise<AccessibilityIssue[]> {
-  const { default: axe } = await import("axe-core");
   const result: AxeResults = await axe.run(root, {
     runOnly: {
       type: "rule",
