@@ -29,10 +29,10 @@ export function ControlPanel({ phase, running, brandOverride = false, onStart, o
             <span className="grid h-8 w-8 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-zinc-400"><TerminalSquare size={15} /></span>
             <div>
               <h2 className="text-sm font-semibold text-zinc-100">
-                {completedWithException ? "Repair completed with exception" : complete ? "Verified repair complete" : waiting ? "Agent paused for judgment" : running ? "ConstraintFix is working" : "Ready to inspect the interface"}
+                {completedWithException ? "Repair completed with exception" : complete ? "Verified repair complete" : waiting ? "Agent paused for judgment" : failed ? "Agent run stopped safely" : running ? "ConstraintFix is working" : "Ready to inspect the interface"}
               </h2>
               <p className="mt-0.5 text-[11px] text-zinc-600">
-                {completedWithException ? "Accessibility and layout passed; the protected brand token remains a human-approved exception." : complete ? "All required constraints passed deterministic verification." : waiting ? "Autonomy stops where product judgment begins." : "Bundled replay is judge-safe; the optional live connector never controls verification."}
+                {completedWithException ? "Accessibility and layout passed; the protected brand token remains a human-approved exception." : complete ? "All required constraints passed deterministic verification." : waiting ? "Autonomy stops where product judgment begins." : "Automate the routine. Escalate the judgment."}
               </p>
               <LatticeLoader status={loaderStatus} label={loaderLabel} className="mt-2" />
             </div>
@@ -41,7 +41,7 @@ export function ControlPanel({ phase, running, brandOverride = false, onStart, o
 
         <div className="flex items-center gap-3">
           {phase === "idle" ? (
-            <LiquidMetalButton label="Start Repair" onClick={onStart} disabled={running} />
+            <LiquidMetalButton label="Start Agent Run" onClick={onStart} disabled={running} />
           ) : (
             <button
               type="button"

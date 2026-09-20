@@ -37,11 +37,11 @@ export function LiquidMetalButton({
     }
 
     return {
-      width: 142,
+      width: 174,
       height: 46,
-      innerWidth: 138,
+      innerWidth: 170,
       innerHeight: 42,
-      shaderWidth: 142,
+      shaderWidth: 174,
       shaderHeight: 46,
     };
   }, [viewMode]);

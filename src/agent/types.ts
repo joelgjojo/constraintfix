@@ -79,7 +79,7 @@ export interface AgentDecisionInput {
   verification: VerificationResult | null;
   humanChoice?: "preserve_brand" | "allow_change";
   transactionId?: string;
-  changeSet?: { request: string; feedback?: VerificationMatrix };
+  changeSet?: { request: string; feedback?: VerificationMatrix; observations?: import('./run').VerifierFeedback };
 }
 
 export interface AgentProvider {

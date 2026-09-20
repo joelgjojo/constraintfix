@@ -1,3 +1,4 @@
+import { newAgentRun, type AgentRun } from '@/agent/run';
 import type { DecisionSource, VerificationResult } from '@/agent/types';
 import { cloneConstraintContract, DEFAULT_CONSTRAINT_CONTRACT, type ConstraintContract } from '@/constraints/contract';
 
@@ -53,6 +54,7 @@ export interface ChangeTransaction {
   startedAt: string;
   completedAt?: string;
   contract: ConstraintContract;
+  agentRun: AgentRun;
   changeSet: ChangeSet;
   status: 'running' | 'rejected' | 'waiting_for_human' | 'accepted' | 'approved_exception' | 'failed';
   baseline?: FixtureState;
@@ -102,7 +104,7 @@ export function restoreBaseline(tx: ChangeTransaction): FixtureState {
 }
 export function newTransaction(source: DecisionSource, contract: ConstraintContract = DEFAULT_CONSTRAINT_CONTRACT): ChangeTransaction {
   const id = crypto.randomUUID();
-  return { id, startedAt: new Date().toISOString(), contract: cloneConstraintContract(contract), status: 'running', changeSet: { id: `CS-${id.slice(0, 8)}`, request: changeRequest, source, files, candidates: [] }, audits: [], rollbackCount: 0, modelCalls: 0, notices: [] };
+  return { id, agentRun: newAgentRun(id), startedAt: new Date().toISOString(), contract: cloneConstraintContract(contract), status: 'running', changeSet: { id: `CS-${id.slice(0, 8)}`, request: changeRequest, source, files, candidates: [] }, audits: [], rollbackCount: 0, modelCalls: 0, notices: [] };
 }
 export function failureList(matrix: VerificationMatrix, contract: ConstraintContract): string[] {
   return matrix.fixtures.flatMap(r => [!r.accessibilityPass && `Accessibility / ${r.fixture}`, !r.brandPass && `Brand / ${r.fixture}`, !r.layoutPass && `${contract.responsive.viewportWidth}px layout / ${r.fixture}`].filter((v): v is string => Boolean(v)));
@@ -133,13 +135,14 @@ export function createChangeReceipt(tx: ChangeTransaction) {
   if (acceptance(final, tx.humanChoice) !== tx.status) throw new Error('Receipt outcome must match deterministic proof.');
   const approvedExceptions = tx.status === 'approved_exception' ? [{ fixture: 'pricing-card', rule: 'protected-brand', expected: tx.contract.brand.protectedPrimaryColor, actual: final.fixtures.find(r => r.fixture === 'pricing-card')!.brandColor }] : [];
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     receiptId: `CF-${tx.id.slice(0, 8)}`,
     transactionId: tx.id,
     changeRequest: tx.changeSet.request,
     generatedAt: tx.completedAt,
     source: tx.changeSet.source,
     contract: cloneConstraintContract(tx.contract),
+    agentRun: structuredClone(tx.agentRun),
     filesTouched: tx.changeSet.files.map(f => f.name),
     candidateHistory: tx.changeSet.candidates,
     audits: tx.audits,

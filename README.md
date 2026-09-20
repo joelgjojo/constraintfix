@@ -1,6 +1,6 @@
 # ConstraintFix
 
-**AI Change Firewall for coding agents**, built with Codex for the Codex Community Hackathon — Calicut, Track 04: Next-Gen Productivity & Automation.
+**An agentic change-review and repair workflow for coding agents.** The AI Change Firewall, built with Codex for the Codex Community Hackathon — Calicut, Track 04: Next-Gen Productivity & Automation.
 
 One request changes three real React fixtures. ConstraintFix applies their structured operations as one transaction, renders them, independently checks the result, rejects and rolls back the entire invalid change set, asks for brand policy, and verifies a replan before generating a receipt. **Agents propose. ConstraintFix proves.**
 
@@ -24,25 +24,39 @@ npm run build
 npm run preview
 ```
 
-React + Vite + TypeScript + Tailwind v4, with reusable shadcn-style controls in `src/components/ui`. The supplied logo, blue/black Ferrofluid background, LiquidMetal Start Repair button, Gradient decision buttons and restrained MagicBento effects remain in the shell. The pricing fixture retains its isolated visual treatment.
+React + Vite + TypeScript + Tailwind v4, with reusable shadcn-style controls in `src/components/ui`. The supplied logo, blue/black Ferrofluid background, LiquidMetal Start Agent Run button, Gradient decision buttons and restrained MagicBento effects remain in the shell. The pricing fixture retains its isolated visual treatment.
 
 The UI always starts in **BUNDLED REPLAY**, regardless of environment configuration. A clean clone needs no API key and makes zero model requests. The header also offers MOCK and an explicitly optional LIVE connector; the selector locks for the duration of a transaction.
 
-## 60–90 second judge flow
+## Workflow automated
 
-| Time | Action and narrative |
+Coding agents create multi-file frontend changes quickly. Developers still repeat the review afterward: inspect components, test accessibility, check design-system rules, check mobile behavior, identify regressions, revert unsafe changes, feed failures into another repair, re-test and document approval.
+
+ConstraintFix automates that routine review loop. It escalates protected policy judgment to a person. The execution surface remains three controlled fixtures; the observations, rejection, state rollback and verification are real.
+
+## Why this workflow is agentic
+
+Each run has a goal and a derived operational plan. It invokes bounded tools, observes the rendered environment, decides acceptance from independent verifier results, acts by rejecting and restoring unsafe work, gathers structured feedback, escalates protected policy, requests a revised plan, executes that plan, verifies it and documents completion.
+
+This is a constrained agentic workflow with a fixed operation vocabulary, not an open-ended autonomous coding agent. The default planner replays bundled decisions; it does not claim fresh AI reasoning. **Planner decisions replayed · tools and verification live.** Optional live planning uses the same executor and verifier.
+
+The feedback loop distinguishes this from a test-only pipeline: it acts on failures, restores the baseline, obtains a specific human policy decision, sends the observations and that decision into replanning, executes the resulting validated operations and checks them again. It helps teams by automating those repeated actions and collecting their evidence. No time-saving multiplier has been measured or claimed.
+
+## 90-second Track 04 pitch
+
+| Time | Action and exact narrative |
 | --- | --- |
-| 0–12s | “An AI coding agent proposes a three-file checkout redesign. This organization has persistent accessibility, brand, mobile and semantic requirements.” Point to the request and contract. |
-| 12–22s | Press **Start Repair**. “We first fix the unnamed info button safely, establish a verified baseline, then apply all three candidate operations as one transaction.” |
-| 22–40s | Show the **6/9 REJECTED** matrix. “The pricing CTA is readable but violates the protected blue. The header actually overflows at 375px. The checkout input loses its accessible label.” Expand browser evidence if useful. |
-| 40–50s | Point to rollback proof: **3 fixtures restored, baseline 9/9**. “Any failed gate rejects the entire change set. This is atomic enforcement.” |
-| 50–65s | Choose **Preserve Brand**. “Product judgment sets the policy; the agent replans all three files using measured feedback.” |
-| 65–80s | Show **9/9 VERIFIED** and receipt. “Two attempts, 18 candidate checks, one rejected candidate, one rollback, one human decision. Exportable evidence explains why this change can land.” Press **Export JSON**. |
-| 80–90s | Reset for the next judge. “Agents propose. ConstraintFix proves.” |
+| 0–12s | “Coding agents create frontend changes quickly. Developers still repeat the review afterward: inspect, test, catch regressions, revert, re-review and document. ConstraintFix turns that repetitive work into an agentic change-review workflow.” |
+| 12–22s | Point to Agent Goal and the operational plan; press **Start Agent Run**. “Its goal is to make this three-file change safe under the organization’s contract. It handles routine steps automatically and asks only for policy judgment.” |
+| 22–40s | Point to the tool trace and evidence. “The planner proposes; tools apply all three changes and measure the browser. Pricing is readable but changes the protected color. The header overflows. The form loses its accessible label. Six of nine gates pass, so the whole change is rejected.” |
+| 40–50s | Point to rollback proof. “It automatically restores all three fixtures and re-runs verification. The baseline is back to nine out of nine. Nothing unsafe is partially accepted.” |
+| 50–62s | Choose **Preserve Brand**. “Only this protected-brand decision needs a person. Keep our brand. The routine accessibility and responsive repairs remain the workflow’s responsibility.” |
+| 62–76s | Show Replan Input and Revised Plan. “The actual verifier observations and my choice reach the planner together. It preserves the token, uses readable foreground text, repairs navigation and restores the form label. The tools execute again: nine out of nine.” |
+| 76–90s | Show Automation Summary and receipt. “The run documents two candidates, one rejection, one rollback, one human escalation and a receipt. Bundled decisions are replayed; tools run live. ConstraintFix automates the review loop while teams control what is allowed to land.” |
 
-Automatic transitions take seconds; narration and the human gate set the demo pace. There is no forced minute-long wait.
+Narration sets the pacing; the application does not add theatrical delays.
 
-**Allow Change:** after the same rejection and rollback, permit only the pricing brand exception. Candidate B still fixes header overflow and form semantics. The final result is **8/9, approved exception**, with brand still FAIL. It never masquerades as a fully verified 9/9 result.
+**Allow Change:** the same rejection and rollback lead to a pricing-brand waiver. Candidate B must still fix header overflow and form semantics. The result remains **8/9, approved exception**, with brand still FAIL.
 
 ## Multi-file change transaction
 
@@ -66,7 +80,7 @@ Providers return bounded operations and explanations. They do not return verifie
 
 `src/constraints/contract.ts` is the single policy source for the contrast threshold, selected axe violation limit, protected brand token, verification viewport, overflow rule and autonomy modes. Every transaction deep-clones that `ConstraintContract` when it starts. The verification surfaces and deterministic verifier then consume the same transaction snapshot, so a later global policy change cannot alter an in-flight decision.
 
-Agent providers can propose only validated operations; they cannot change the contract or set verifier truth. Receipt v3 records the exact contract snapshot plus an explicit `gateResult` with its decision, passed/required/failed checks, approved-exception count and recommended exit code. This is machine-readable, CI-ready decision output. Connecting it to a real CI system remains future work, and the hackathon executor remains intentionally bounded to the three controlled fixtures.
+Agent providers can propose only validated operations; they cannot change the contract or set verifier truth. Receipt v4 records the exact contract snapshot plus an explicit `gateResult` with its decision, passed/required/failed checks, approved-exception count and recommended exit code. This is machine-readable, CI-ready decision output. Connecting it to a real CI system remains future work, and the hackathon executor remains intentionally bounded to the three controlled fixtures.
 
 ## Architecture
 
@@ -78,7 +92,7 @@ AgentProvider (BUNDLED REPLAY / MOCK / OPTIONAL LIVE)
   → axe + contrast math + computed token + DOM geometry
   → whole-change-set acceptance OR rejection + snapshot rollback
   → baseline re-verification → human policy → multi-file replan
-  → verification → receipt v3 with contract + gateResult
+  → verification → receipt v4 with contract + gateResult
 ```
 
 - `src/constraints/contract.ts`: typed policy source snapshotted into every transaction and receipt.
@@ -92,7 +106,31 @@ AgentProvider (BUNDLED REPLAY / MOCK / OPTIONAL LIVE)
 
 Only allowlisted fixture/action combinations can execute. A malformed, partial, duplicated or out-of-policy operation set is rejected before any fixture changes. Reset clears candidates, receipt, matrix, events, user input and preview feedback. Synchronous operation locks block overlapping work. Unexpected render/audit/provider failures recover to the saved baseline when available and cannot produce an accepted receipt.
 
-Receipt schema v3 includes transaction/change-set IDs, request, source, contract snapshot, machine-readable gate result, files, candidate operations and measured outcomes, all five audits, restored state/proof, human policy, exceptions, final outcome and evaluation. A normal run has **2 attempts, 3 files, 18 candidate checks, 45 total measured checks** (including initial, baseline and rollback audits), 1 rejection, 1 rollback and 1 human decision.
+Receipt schema v4 includes transaction/change-set IDs, request, source, contract snapshot, machine-readable gate result, files, candidate operations and measured outcomes, all five audits, restored state/proof, human policy, exceptions, final outcome and evaluation. A normal run has **2 attempts, 3 files, 18 candidate checks, 45 total measured checks** (including initial, baseline and rollback audits), 1 rejection, 1 rollback and 1 human decision.
+
+## AgentRun and executed tools
+
+`ChangeTransaction.agentRun` composes around the existing transaction. The transaction remains the authority for status, candidates, audit matrices, contract and rollback. AgentRun adds the goal, derived plan, ordered execution trace, human escalations and exact replan input/output. Receipt v4 contains the completed run trace.
+
+The trace wraps the real calls in `use-change-transaction.ts`; a tool is marked succeeded only after its operation returns, and thrown errors are marked failed:
+
+| Tool | Actual behavior |
+| --- | --- |
+| inspect_change_set | Checks all three rendered fixture targets and reads the transaction contract |
+| repair_accessible_name | Renders the pricing aria-label repair |
+| plan_change_set | Calls the selected AgentProvider with measured feedback |
+| apply_change_set | Validates operations, updates React state atomically and confirms render |
+| verify_change_set | Runs serial axe audits, computed-color contrast, brand comparison and DOM geometry for all fixtures |
+| rollback_transaction | Restores the saved fixture-state snapshot and renders it |
+| verify_rollback | Re-runs the same real browser verifier after restoration |
+| request_human_policy | Requires verified rollback and an observed brand failure; records exactly one escalation |
+| generate_constraint_receipt | Builds a receipt only after accepted or approved-exception verification |
+
+Verification is one combined tool because that is the actual existing function boundary. It runs all three verifier categories; there are no decorative separate calls.
+
+The same `AgentDecisionInput` object retained in Replan Input is sent to the provider. It includes the complete matrix, structured per-fixture observations (actual/expected brand, contrast/threshold, viewport/scroll width and axe violations), and the human choice. The live handler forwards those observations to its planner prompt too. Replayed operation choices remain bounded; changing the contract does not make this a general repair engine.
+
+Automation Summary derives files reviewed from actual audits, candidate-check counts from candidate matrices, and rejection, rollback and escalation counts from the run. “0 automated checks pending” means every selected gate was measured, not that no manual review is ever needed. Approved exceptions remain measured failures.
 
 ## Agent and Codex role
 
@@ -116,11 +154,11 @@ OPENAI_MODEL=gpt-5-mini
 
 Never prefix a secret with `VITE_`. Vercel uses the Vite build output plus the API function. Redeploy after changing environment variables. `npm run preview` tests static production output; local live calls require `npm run dev` or the deployed Vercel function.
 
-For local live requests, also set `VITE_AGENT_MODE=live` so the development proxy is registered, then restart `npm run dev`. Select **OPTIONAL LIVE · API credits** explicitly before Start Repair. Live requests carry the real per-fixture feedback and human policy, request strict structured output and validate all three operations at both the API boundary and executor. No arbitrary model-written code runs. Calls use `store:false`, a 25-second timeout and no automatic retry.
+For local live requests, also set `VITE_AGENT_MODE=live` so the development proxy is registered, then restart `npm run dev`. Select **OPTIONAL LIVE PLANNER** explicitly before Start Agent Run. Live requests carry the real per-fixture feedback and human policy, request strict structured output and validate all three operations at both the API boundary and executor. No arbitrary model-written code runs. Calls use `store:false`, a 25-second timeout and no automatic retry.
 
 Failed live planning switches visibly to **BUNDLED REPLAY**, while deterministic verification still runs. The fallback is an audited offline proposal, not a captured OpenAI response and not fresh model reasoning.
 
-**This upgrade was tested without paid model calls.** The multi-file live schema and local validation are implemented; a real three-file LIVE end-to-end run remains intentionally untested. BUNDLED REPLAY is the submission mode.
+**This upgrade was tested without paid model calls.** The multi-file live schema and local validation are implemented; a real three-file LIVE end-to-end run remains untested in this upgrade. BUNDLED REPLAY is the submission mode.
 
 ## What is real and what is bounded
 
