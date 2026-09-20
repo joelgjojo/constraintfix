@@ -77,7 +77,7 @@ At runtime, Codex/OpenAI is the **planner**, not the authority. The planner prop
 
 ### Demo / Pitch Video
 
-**Video link:** Add the public demo/pitch video URL here before final submission.
+**[Watch the ConstraintFix demo / pitch video](https://drive.google.com/file/d/1y190CKQP15SIonErRkP9Pm8C0Mr_wXT0/view?usp=sharing)**
 
 A 90-second recording script is included in [Additional Notes](#90-second-track-04-pitch).
 
