@@ -1,5 +1,6 @@
 import { RotateCcw, Sparkles, TerminalSquare } from "lucide-react";
 import type { AgentPhase } from "@/agent/types";
+import { Strands } from "@/components/ui/strands";
 import { LatticeLoader } from "@/components/ui/lattice-loader";
 import { LiquidMetalButton } from "@/components/ui/liquid-metal-button";
 
@@ -22,6 +23,7 @@ export function ControlPanel({ phase, running, brandOverride = false, onStart, o
   return (
     <section className="panel relative overflow-hidden p-5">
       <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-blue-500/[0.07] blur-3xl" />
+      <Strands active={!waiting && !failed} className={`control-strands ${running ? "control-strands--working" : ""}`} />
       <div className="relative flex flex-col gap-6">
         <div>
           <div className="section-kicker">AGENT CONTROL</div>

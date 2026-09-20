@@ -108,3 +108,31 @@
   .magic-bento__particles,
   .magic-bento__ripple { display: none; }
 }
+
+/* An idle glow remains visible without requiring pointer interaction. */
+.magic-bento__ambient {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+  border: 1px solid rgba(var(--magic-glow-color), 0.16);
+  background: radial-gradient(ellipse at 0% 0%, rgba(var(--magic-glow-color), 0.085), transparent 55%);
+}
+.magic-bento__ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(var(--magic-glow-color), 0.48), inset 0 -1px 0 rgba(var(--magic-glow-color), 0.16);
+  animation: magic-bento-breathe 7s ease-in-out infinite;
+}
+@keyframes magic-bento-breathe {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+.magic-bento--static .magic-bento__ambient::after { animation: none; opacity: 0.4; }
+@media (prefers-reduced-motion: reduce) {
+  .magic-bento__ambient::after { animation: none; opacity: 0.4; }
+}

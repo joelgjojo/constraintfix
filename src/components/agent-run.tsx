@@ -1,15 +1,16 @@
+import { MagicBento } from "@/components/ui/magic-bento";
 import { agentGoal, operationalPlan, automationSummary } from '@/agent/run';
 import type { ChangeTransaction } from '@/transactions/change-set';
 
 export function AgentPlan({ tx }: { tx: ChangeTransaction | null }) {
-  return <section className="panel my-4 p-5" aria-label="Agent goal and plan">
+  return <MagicBento ambient enableTilt={false} enableMagnetism={false} particleCount={5} className="my-4"><section className="panel p-5" aria-label="Agent goal and plan">
     <div className="section-kicker">AGENT GOAL</div>
     <h2 className="mt-2 text-base font-medium">{tx?.agentRun.goal ?? agentGoal}</h2>
     <details className="mt-3 text-xs text-slate-400" open>
       <summary className="cursor-pointer text-sky-200">Operational plan · derived from the bounded workflow</summary>
       <ol className="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2 list-decimal pl-4">{(tx?.agentRun.plan ?? operationalPlan).map(step => <li key={step}>{step}</li>)}</ol>
     </details>
-  </section>;
+  </section></MagicBento>;
 }
 
 const revisedActions = {
@@ -52,9 +53,9 @@ export function AutomationSummary({ tx, receiptGenerated }: { tx: ChangeTransact
     ['Human escalations', summary.escalations], ['Automated checks pending', summary.pendingChecks ?? 'In progress'],
     ['Receipt', summary.receiptGenerated ? 'Generated' : 'Pending'],
   ];
-  return <section className="panel my-4 p-5" aria-label="Automation summary"><div className="section-kicker">AUTOMATION SUMMARY · FRONTEND CHANGE REVIEW</div>
+  return <MagicBento ambient enableTilt={false} enableMagnetism={false} particleCount={5} className="my-4"><section className="panel p-5" aria-label="Automation summary"><div className="section-kicker">AUTOMATION SUMMARY · FRONTEND CHANGE REVIEW</div>
     <p className="mt-2 text-xs text-slate-400">Inspect → verify → reject → rollback → replan → re-verify → document. Human involvement: policy judgment.</p>
     <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">{metrics.map(([label, value]) => <div className="metric-card" key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
     <p className="mt-3 text-xs text-slate-400">{summary.failedChecks ? `${summary.failedChecks} measured gate remains failed; see the recorded exception. ` : ''}These are executed checks, not a claim that all manual review is unnecessary.</p>
-  </section>;
+  </section></MagicBento>;
 }

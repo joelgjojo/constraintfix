@@ -7,6 +7,7 @@ interface MagicBentoProps {
   children: React.ReactNode;
   className?: string;
   textAutoHide?: boolean;
+  ambient?: boolean;
   enableStars?: boolean;
   enableSpotlight?: boolean;
   enableBorderGlow?: boolean;
@@ -41,6 +42,7 @@ export function MagicBento({
   children,
   className,
   textAutoHide = false,
+  ambient = false,
   enableStars = true,
   enableSpotlight = true,
   enableBorderGlow = true,
@@ -156,6 +158,7 @@ export function MagicBento({
       ref={surfaceRef}
       className={cn(
         "magic-bento",
+        ambient && "magic-bento--ambient",
         textAutoHide && "magic-bento--text-autohide",
         enableSpotlight && "magic-bento--spotlight",
         enableBorderGlow && "magic-bento--border-glow",
@@ -171,6 +174,7 @@ export function MagicBento({
       onPointerLeave={onPointerLeave}
       onClick={clickEffect ? onClick : undefined}
     >
+      {ambient && <span className="magic-bento__ambient" aria-hidden="true" />}
       <span className="magic-bento__spotlight" aria-hidden="true" />
       <span className="magic-bento__border" aria-hidden="true" />
       <span className="magic-bento__particles" aria-hidden="true">
